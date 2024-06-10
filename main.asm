@@ -40,6 +40,9 @@ INCLUDE "engine/events/display_pokedex.asm"
 INCLUDE "data/variables.asm"  ; Include the variables definition file
 INCLUDE "engine/neat.asm"     ; Include NEAT algorithm implementation
 
+; Make sure this section is included before any call to InitPopulation is made
+INCLUDE "engine/init_population_call.asm" ; Separate file for population initialization
+
 
 SECTION "bank3", ROMX
 
