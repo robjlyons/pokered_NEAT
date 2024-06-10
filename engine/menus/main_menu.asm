@@ -1,4 +1,6 @@
 MainMenu:
+; Initialize NEAT population
+    	call InitPopulation  ; Add this line to initialize NEAT
 ; Check save file
 	call InitOptions
 	xor a
