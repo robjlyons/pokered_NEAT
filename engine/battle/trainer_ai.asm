@@ -13,8 +13,10 @@ AIEnemyTrainerChooseMoves:
     ld de, wNEAT_EnemyMoves
     ld bc, 4
 CopyMovesLoop:
-    ld a, [hl+]
-    ld [de+], a
+    ld a, [hl]
+    ld [de], a
+    inc hl
+    inc de
     dec bc
     ld a, b
     or c
