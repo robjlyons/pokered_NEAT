@@ -7,10 +7,19 @@ AIEnemyTrainerChooseMoves:
     ld [wNEAT_EnemyHP], a
     ld a, [wPlayerMonHP]
     ld [wNEAT_PlayerHP], a
+    
+    ; Copy enemy moves to NEAT buffer
     ld hl, wEnemyMonMoves
     ld de, wNEAT_EnemyMoves
     ld bc, 4
-    ldir
+CopyMovesLoop:
+    ld a, [hl+]
+    ld [de+], a
+    dec bc
+    ld a, b
+    or c
+    jr nz, CopyMovesLoop
+
     ld a, [wEnemyStatus]
     ld [wNEAT_EnemyStatus], a
     ld a, [wPlayerStatus]
