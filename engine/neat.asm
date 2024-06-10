@@ -1,7 +1,7 @@
 SECTION "NEAT Initialization", ROMX
 
-NEAT_PopulationSize:   EQU 10
-NEAT_NumWeights:       EQU 4  ; Example number of weights for simplicity
+NEAT_PopulationSize   = 10
+NEAT_NumWeights       = 4  ; Example number of weights for simplicity
 
 ; Data storage
 NEAT_Population:       ds NEAT_PopulationSize * NEAT_NumWeights
