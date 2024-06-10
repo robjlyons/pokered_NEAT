@@ -1,5 +1,20 @@
 SECTION "NEAT Initialization", ROMX
 
+NEAT_PopulationSize:   EQU 10
+NEAT_NumWeights:       EQU 4  ; Example number of weights for simplicity
+
+; Data storage
+NEAT_Population:       ds NEAT_PopulationSize * NEAT_NumWeights
+NEAT_Performance:      ds NEAT_PopulationSize
+NEAT_CurrentIndex:     db 0
+
+wNEAT_EnemyHP:         ds 1
+wNEAT_PlayerHP:        ds 1
+wNEAT_EnemyMoves:      ds 4
+wNEAT_EnemyStatus:     ds 1
+wNEAT_PlayerStatus:    ds 1
+wNEAT_SelectedMove:    ds 1
+
 InitPopulation:
     ld hl, NEAT_Population
     ld bc, NEAT_PopulationSize * NEAT_NumWeights
@@ -77,7 +92,7 @@ EvaluateBattle:
     ld l, a
     ld h, 0
     add hl, hl
-    add hl, de  ; hl = NEAT_Performance + CurrentIndex * 2
+    add hl, hl  ; hl = NEAT_Performance + CurrentIndex * 2
     ; Store performance result (example: store a fixed value for simplicity)
     ld [hl], $10
     ret
@@ -94,8 +109,10 @@ SelectAndCrossover:
 CopyMemory:
     ; Copy bc bytes from hl to de
 CopyLoop:
-    ld a, [hl+]
-    ld [de+], a
+    ld a, [hl]
+    ld [de], a
+    inc hl
+    inc de
     dec bc
     ld a, b
     or c
@@ -109,26 +126,10 @@ MutatePopulation:
 MutateLoop:
     call RandomByte
     xor [hl]
-    ld [hl+], a
+    ld [hl], a
+    inc hl
     dec bc
     ld a, b
     or c
     jr nz, MutateLoop
     ret
-
-SECTION "NEAT Data", ROM0
-
-NEAT_PopulationSize:   EQU 10
-NEAT_NumWeights:       EQU 4  ; Example number of weights for simplicity
-
-; Data storage
-NEAT_Population:       ds NEAT_PopulationSize * NEAT_NumWeights
-NEAT_Performance:      ds NEAT_PopulationSize
-NEAT_CurrentIndex:     db 0
-
-wNEAT_EnemyHP:         ds 1
-wNEAT_PlayerHP:        ds 1
-wNEAT_EnemyMoves:      ds 4
-wNEAT_EnemyStatus:     ds 1
-wNEAT_PlayerStatus:    ds 1
-wNEAT_SelectedMove:    ds 1
