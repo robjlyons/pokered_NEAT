@@ -39,7 +39,8 @@ RandLoop:
 RandomByte:
     ; Generate a random byte in a (simple RNG for demonstration)
     ld a, [SomeMemoryLocation]
-    xor a, [AnotherMemoryLocation]
+    ld b, [AnotherMemoryLocation]
+    xor b
     ret
 
 SECTION "NEAT Move Selection", ROMX
