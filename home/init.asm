@@ -135,10 +135,3 @@ StopAllSounds::
 	ld [wLastMusicSoundID], a
 	dec a
 	jp PlaySound
-
-SECTION "Home Initialization", ROMX
-
-GameStartInit:
-    	call InitPopulation  ; Initialize NEAT population
-    	; Other initialization code...
-   	 ret
