@@ -3,13 +3,11 @@ NULL::
 
 INCLUDE "home/header.asm"
 
-
 SECTION "High Home", ROM0
 
 INCLUDE "home/lcd.asm"
 INCLUDE "home/clear_sprites.asm"
 INCLUDE "home/copy.asm"
-
 
 SECTION "Home", ROM0
 
