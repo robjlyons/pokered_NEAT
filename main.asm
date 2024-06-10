@@ -37,8 +37,8 @@ INCLUDE "engine/battle/move_effects/drain_hp.asm"
 INCLUDE "engine/menus/players_pc.asm"
 INCLUDE "engine/pokemon/remove_mon.asm"
 INCLUDE "engine/events/display_pokedex.asm"
-INCLUDE "data/variables.asm"
-INCLUDE "engine/neat.asm"
+INCLUDE "data/variables.asm"  ; Include the variables definition file
+INCLUDE "engine/neat.asm"     ; Include NEAT algorithm implementation
 
 
 SECTION "bank3", ROMX
