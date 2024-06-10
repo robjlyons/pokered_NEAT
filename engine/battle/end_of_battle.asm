@@ -72,6 +72,8 @@ EndOfBattle:
 	call GBPalWhiteOut
 	ld a, $ff
 	ld [wDestinationWarpID], a
+	call EvaluateBattle
+        call SelectAndCrossover
 	ret
 
 YouWinText:
