@@ -1,10 +1,3 @@
-SECTION "Home Initialization", ROMX
-
-GameStartInit:
-    call InitPopulation  ; Initialize NEAT population
-    ; Other initialization code...
-    ret
-
 SoftReset::
 	call StopAllSounds
 	call GBPalWhiteOut
@@ -14,6 +7,7 @@ SoftReset::
 
 Init::
 ;  Program init.
+call InitPopulation  ; Initialize NEAT population
 
 DEF rLCDC_DEFAULT EQU %11100011
 ; * LCD enabled
