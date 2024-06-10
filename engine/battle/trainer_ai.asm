@@ -1,7 +1,5 @@
-INCLUDE "engine/debug/debug_neat.asm"
-; creates a set of moves that may be used and returns its address in hl
-; unused slots are filled with 0, all used slots may be chosen with equal probability
-; AIEnemyTrainerChooseMoves: Modified to integrate NEAT
+INCLUDE "engine/debug/debug.asm"
+
 AIEnemyTrainerChooseMoves:
     ; Collect battle context data
     ld a, [wEnemyMonHP]
