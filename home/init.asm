@@ -1,10 +1,3 @@
-SECTION "Home Initialization", ROMX
-
-GameStartInit:
-    call InitPopulation  ; Initialize NEAT population
-    ; Other initialization code...
-    ret
-
 SoftReset::
 	call StopAllSounds
 	call GBPalWhiteOut
