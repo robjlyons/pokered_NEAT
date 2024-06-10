@@ -39,7 +39,8 @@ RandLoop:
 RandomByte:
     ; Generate a random byte in a (simple RNG for demonstration)
     ld a, [SomeMemoryLocation]
-    ld b, [AnotherMemoryLocation]
+    ld b, a
+    ld a, [AnotherMemoryLocation]
     xor b
     ret
 
