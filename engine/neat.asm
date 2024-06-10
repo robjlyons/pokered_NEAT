@@ -8,13 +8,6 @@ NEAT_Population:       ds NEAT_PopulationSize * NEAT_NumWeights
 NEAT_Performance:      ds NEAT_PopulationSize
 NEAT_CurrentIndex:     db 0
 
-wNEAT_EnemyHP:         ds 1
-wNEAT_PlayerHP:        ds 1
-wNEAT_EnemyMoves:      ds 4
-wNEAT_EnemyStatus:     ds 1
-wNEAT_PlayerStatus:    ds 1
-wNEAT_SelectedMove:    ds 1
-
 InitPopulation:
     ld hl, NEAT_Population
     ld bc, NEAT_PopulationSize * NEAT_NumWeights
