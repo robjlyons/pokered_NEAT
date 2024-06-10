@@ -26,7 +26,8 @@ PrintHex:
     and $0F
     cp 10
     jr c, .digit_is_num
-    add a, 'A' - 10
+    sub 10
+    add a, 'A'
     jr .store_digit
 .digit_is_num
     add a, '0'
