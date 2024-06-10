@@ -115,3 +115,20 @@ MutateLoop:
     or c
     jr nz, MutateLoop
     ret
+
+SECTION "NEAT Data", ROM0
+
+NEAT_PopulationSize:   EQU 10
+NEAT_NumWeights:       EQU 4  ; Example number of weights for simplicity
+
+; Data storage
+NEAT_Population:       ds NEAT_PopulationSize * NEAT_NumWeights
+NEAT_Performance:      ds NEAT_PopulationSize
+NEAT_CurrentIndex:     db 0
+
+wNEAT_EnemyHP:         ds 1
+wNEAT_PlayerHP:        ds 1
+wNEAT_EnemyMoves:      ds 4
+wNEAT_EnemyStatus:     ds 1
+wNEAT_PlayerStatus:    ds 1
+wNEAT_SelectedMove:    ds 1
