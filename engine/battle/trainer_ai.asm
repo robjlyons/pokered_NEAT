@@ -22,10 +22,10 @@ CopyMovesLoop:
     or c
     jr nz, CopyMovesLoop
 
-    ld a, [wEnemyStatus]
-    ld [wNEAT_EnemyStatus], a
-    ld a, [wPlayerStatus]
-    ld [wNEAT_PlayerStatus], a
+    ld a, [wEnemyMonStatus]
+    ld [wNEAT_EnemyMonStatus], a
+    ld a, [wBattleMonStatus]
+    ld [wNEAT_BattleMonStatus], a
 
     ; Call NEAT algorithm to choose move
     call NEATChooseMove
