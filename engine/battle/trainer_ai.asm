@@ -5,8 +5,8 @@ AIEnemyTrainerChooseMoves:
     ; Collect battle context data
     ld a, [wEnemyMonHP]
     ld [wNEAT_EnemyHP], a
-    ld a, [wPlayerMonHP]
-    ld [wNEAT_PlayerHP], a
+    ld a, [wBattleMonHP]
+    ld [wNEAT_wBattleMonHP], a
     
     ; Copy enemy moves to NEAT buffer
     ld hl, wEnemyMonMoves
