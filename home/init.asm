@@ -1,4 +1,3 @@
-
 SECTION "Home Initialization", ROMX
 
 GameStartInit:
