@@ -1,3 +1,4 @@
+INCLUDE "engine/debug/debug_neat.asm"
 ; creates a set of moves that may be used and returns its address in hl
 ; unused slots are filled with 0, all used slots may be chosen with equal probability
 ; AIEnemyTrainerChooseMoves: Modified to integrate NEAT
@@ -5,9 +6,17 @@ AIEnemyTrainerChooseMoves:
     ; Collect battle context data
     ld a, [wEnemyMonHP]
     ld [wNEAT_EnemyHP], a
+    ld d, a       ; Save for debugging
     ld a, [wBattleMonHP]
     ld [wNEAT_wBattleMonHP], a
-    
+    ld e, a       ; Save for debugging
+
+    ; Print EnemyMonHP and BattleMonHP
+    ld a, d
+    call PrintHex
+    ld a, e
+    call PrintHex
+
     ; Copy enemy moves to NEAT buffer
     ld hl, wEnemyMonMoves
     ld de, wNEAT_EnemyMoves
@@ -24,8 +33,16 @@ CopyMovesLoop:
 
     ld a, [wEnemyMonStatus]
     ld [wNEAT_EnemyMonStatus], a
+    ld d, a       ; Save for debugging
     ld a, [wBattleMonStatus]
     ld [wNEAT_BattleMonStatus], a
+    ld e, a       ; Save for debugging
+
+    ; Print EnemyMonStatus and BattleMonStatus
+    ld a, d
+    call PrintHex
+    ld a, e
+    call PrintHex
 
     ; Call NEAT algorithm to choose move
     call NEATChooseMove
