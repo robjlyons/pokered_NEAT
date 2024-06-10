@@ -1,107 +1,29 @@
 ; creates a set of moves that may be used and returns its address in hl
 ; unused slots are filled with 0, all used slots may be chosen with equal probability
+; AIEnemyTrainerChooseMoves: Modified to integrate NEAT
 AIEnemyTrainerChooseMoves:
-	ld a, $a
-	ld hl, wBuffer ; init temporary move selection array. Only the moves with the lowest numbers are chosen in the end
-	ld [hli], a   ; move 1
-	ld [hli], a   ; move 2
-	ld [hli], a   ; move 3
-	ld [hl], a    ; move 4
-	ld a, [wEnemyDisabledMove] ; forbid disabled move (if any)
-	swap a
-	and $f
-	jr z, .noMoveDisabled
-	ld hl, wBuffer
-	dec a
-	ld c, a
-	ld b, $0
-	add hl, bc    ; advance pointer to forbidden move
-	ld [hl], $50  ; forbid (highly discourage) disabled move
-.noMoveDisabled
-	ld hl, TrainerClassMoveChoiceModifications
-	ld a, [wTrainerClass]
-	ld b, a
-.loopTrainerClasses
-	dec b
-	jr z, .readTrainerClassData
-.loopTrainerClassData
-	ld a, [hli]
-	and a
-	jr nz, .loopTrainerClassData
-	jr .loopTrainerClasses
-.readTrainerClassData
-	ld a, [hl]
-	and a
-	jp z, .useOriginalMoveSet
-	push hl
-.nextMoveChoiceModification
-	pop hl
-	ld a, [hli]
-	and a
-	jr z, .loopFindMinimumEntries
-	push hl
-	ld hl, AIMoveChoiceModificationFunctionPointers
-	dec a
-	add a
-	ld c, a
-	ld b, 0
-	add hl, bc    ; skip to pointer
-	ld a, [hli]   ; read pointer into hl
-	ld h, [hl]
-	ld l, a
-	ld de, .nextMoveChoiceModification  ; set return address
-	push de
-	jp hl         ; execute modification function
-.loopFindMinimumEntries ; all entries will be decremented sequentially until one of them is zero
-	ld hl, wBuffer  ; temp move selection array
-	ld de, wEnemyMonMoves  ; enemy moves
-	ld c, NUM_MOVES
-.loopDecrementEntries
-	ld a, [de]
-	inc de
-	and a
-	jr z, .loopFindMinimumEntries
-	dec [hl]
-	jr z, .minimumEntriesFound
-	inc hl
-	dec c
-	jr z, .loopFindMinimumEntries
-	jr .loopDecrementEntries
-.minimumEntriesFound
-	ld a, c
-.loopUndoPartialIteration ; undo last (partial) loop iteration
-	inc [hl]
-	dec hl
-	inc a
-	cp NUM_MOVES + 1
-	jr nz, .loopUndoPartialIteration
-	ld hl, wBuffer  ; temp move selection array
-	ld de, wEnemyMonMoves  ; enemy moves
-	ld c, NUM_MOVES
-.filterMinimalEntries ; all minimal entries now have value 1. All other slots will be disabled (move set to 0)
-	ld a, [de]
-	and a
-	jr nz, .moveExisting
-	ld [hl], a
-.moveExisting
-	ld a, [hl]
-	dec a
-	jr z, .slotWithMinimalValue
-	xor a
-	ld [hli], a     ; disable move slot
-	jr .next
-.slotWithMinimalValue
-	ld a, [de]
-	ld [hli], a     ; enable move slot
-.next
-	inc de
-	dec c
-	jr nz, .filterMinimalEntries
-	ld hl, wBuffer    ; use created temporary array as move set
-	ret
-.useOriginalMoveSet
-	ld hl, wEnemyMonMoves    ; use original move set
-	ret
+    ; Collect battle context data
+    ld a, [wEnemyMonHP]
+    ld [wNEAT_EnemyHP], a
+    ld a, [wPlayerMonHP]
+    ld [wNEAT_PlayerHP], a
+    ld hl, wEnemyMonMoves
+    ld de, wNEAT_EnemyMoves
+    ld bc, 4
+    ldir
+    ld a, [wEnemyStatus]
+    ld [wNEAT_EnemyStatus], a
+    ld a, [wPlayerStatus]
+    ld [wNEAT_PlayerStatus], a
+
+    ; Call NEAT algorithm to choose move
+    call NEATChooseMove
+
+    ; Set the selected move in the buffer
+    ld hl, wBuffer
+    ld a, [wNEAT_SelectedMove]
+    ld [hl], a
+    ret
 
 AIMoveChoiceModificationFunctionPointers:
 	dw AIMoveChoiceModification1
