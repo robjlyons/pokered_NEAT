@@ -26,3 +26,44 @@ RandomByte:
     ld a, [SomeMemoryLocation]
     xor a, [AnotherMemoryLocation]
     ret
+
+SECTION "NEAT Move Selection", ROMX
+
+NEATChooseMove:
+    ; Placeholder for NEAT algorithm
+    ; Example: Simple move selection based on weights
+    ld hl, NEAT_Population
+    ld a, [NEAT_CurrentIndex]
+    ld l, a
+    ld h, 0
+    add hl, hl
+    add hl, hl  ; hl = NEAT_Population + CurrentIndex * NEAT_NumWeights
+
+    ; For simplicity, select the move with the highest weight
+    ld de, hl
+    ld b, 0
+    ld c, 0
+    ld a, [de]
+    inc de
+    ld h, a
+    ld a, [de]
+    cp h
+    jr nc, .next
+    ld c, 1
+.next:
+    inc de
+    ld a, [de]
+    cp h
+    jr nc, .next2
+    ld c, 2
+.next2:
+    inc de
+    ld a, [de]
+    cp h
+    jr nc, .next3
+    ld c, 3
+.next3:
+    ; Store selected move
+    ld a, c
+    ld [wNEAT_SelectedMove], a
+    ret
