@@ -56,7 +56,8 @@ NEATChooseMove:
     add hl, hl  ; hl = NEAT_Population + CurrentIndex * NEAT_NumWeights
 
     ; For simplicity, select the move with the highest weight
-    ld de, hl
+    push hl
+    pop de
     ld b, 0
     ld c, 0
     ld a, [de]
@@ -64,21 +65,21 @@ NEATChooseMove:
     ld h, a
     ld a, [de]
     cp h
-    jr nc, next
+    jr nc, .next
     ld c, 1
-next:
+.next:
     inc de
     ld a, [de]
     cp h
-    jr nc, next2
+    jr nc, .next2
     ld c, 2
-next2:
+.next2:
     inc de
     ld a, [de]
     cp h
-    jr nc, next3
+    jr nc, .next3
     ld c, 3
-next3:
+.next3:
     ; Store selected move
     ld a, c
     ld [wNEAT_SelectedMove], a
