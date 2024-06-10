@@ -30,7 +30,7 @@ PrintHex:
     add a, "A"
     jr .store_digit
 .digit_is_num
-    add a, '0'
+    add a, "0"
 .store_digit
     ld de, hl
     call PrintChar
