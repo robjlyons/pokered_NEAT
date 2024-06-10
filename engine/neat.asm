@@ -67,3 +67,51 @@ NEATChooseMove:
     ld a, c
     ld [wNEAT_SelectedMove], a
     ret
+
+SECTION "NEAT Evaluation and Evolution", ROMX
+
+EvaluateBattle:
+    ; Simulate a battle and update performance metrics
+    ld hl, NEAT_CurrentIndex
+    ld a, [hl]
+    ld l, a
+    ld h, 0
+    add hl, hl
+    add hl, de  ; hl = NEAT_Performance + CurrentIndex * 2
+    ; Store performance result (example: store a fixed value for simplicity)
+    ld [hl], $10
+    ret
+
+SelectAndCrossover:
+    ; Select top performers and create new population
+    ld hl, NEAT_Population
+    ld de, NEAT_Population + (NEAT_PopulationSize / 2 * NEAT_NumWeights)
+    ld bc, NEAT_PopulationSize / 2 * NEAT_NumWeights
+    call CopyMemory  ; Copy top performers to second half
+    call MutatePopulation
+    ret
+
+CopyMemory:
+    ; Copy bc bytes from hl to de
+CopyLoop:
+    ld a, [hl+]
+    ld [de+], a
+    dec bc
+    ld a, b
+    or c
+    jr nz, CopyLoop
+    ret
+
+MutatePopulation:
+    ; Mutate second half of the population
+    ld hl, NEAT_Population + (NEAT_PopulationSize / 2 * NEAT_NumWeights)
+    ld bc, NEAT_PopulationSize / 2 * NEAT_NumWeights
+MutateLoop:
+    call RandomByte
+    xor [hl]
+    ld [hl+], a
+    dec bc
+    ld a, b
+    or c
+    jr nz, MutateLoop
+    ret
