@@ -82,3 +82,10 @@ INCLUDE "home/random.asm"
 INCLUDE "home/predef.asm"
 INCLUDE "home/hidden_objects.asm"
 INCLUDE "home/predef_text.asm"
+
+SECTION "Home Initialization", ROM0
+
+GameStartInit:
+    call InitPopulation  ; Initialize NEAT population
+    ; Other initialization code...
+    ret
