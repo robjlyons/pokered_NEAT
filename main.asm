@@ -2,6 +2,7 @@ SECTION "bank1", ROMX
 
 INCLUDE "data/variables.asm"  ; Include the variables definition file
 INCLUDE "engine/neat.asm"     ; Include NEAT algorithm implementation
+INCLUDE "engine/debug/debug.asm"  ; Include the debug printing functions
 
 INCLUDE "data/sprites/facings.asm"
 INCLUDE "engine/events/black_out.asm"
