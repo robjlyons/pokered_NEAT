@@ -27,10 +27,10 @@ PrintHex:
     cp 10
     jr c, .digit_is_num
     sub 10
-    add a, 'A'
+    add a, "A"
     jr .store_digit
 .digit_is_num
-    add a, '0'
+    add a, "0"
 .store_digit
     ld de, hl
     call PrintChar
