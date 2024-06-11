@@ -1,6 +1,6 @@
 SECTION "NEAT Initialization", ROMX
 
-DEF NEAT_PopulationSize = 10
+DEF NEAT_PopulationSize = 5
 DEF NEAT_NumWeights = 4  ; Example number of weights for simplicity
 
 ; Data storage
