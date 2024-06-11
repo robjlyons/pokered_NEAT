@@ -5,14 +5,11 @@ AIEnemyTrainerChooseMoves:
     ld a, [wEnemyMonHP]
     ld [wNEAT_EnemyHP], a
     ld d, a       ; Save for debugging
+    call PrintHex
+
     ld a, [wBattleMonHP]
     ld [wNEAT_wBattleMonHP], a
     ld e, a       ; Save for debugging
-
-    ; Print EnemyMonHP and BattleMonHP
-    ld a, d
-    call PrintHex
-    ld a, e
     call PrintHex
 
     ; Copy enemy moves to NEAT buffer
@@ -22,6 +19,7 @@ AIEnemyTrainerChooseMoves:
 CopyMovesLoop:
     ld a, [hl]
     ld [de], a
+    call PrintHex  ; Print each move
     inc hl
     inc de
     dec bc
@@ -32,22 +30,24 @@ CopyMovesLoop:
     ld a, [wEnemyMonStatus]
     ld [wNEAT_EnemyMonStatus], a
     ld d, a       ; Save for debugging
+    call PrintHex
+
     ld a, [wBattleMonStatus]
     ld [wNEAT_BattleMonStatus], a
     ld e, a       ; Save for debugging
-
-    ; Print EnemyMonStatus and BattleMonStatus
-    ld a, d
-    call PrintHex
-    ld a, e
     call PrintHex
 
-    ; Call NEAT algorithm to choose move
-    call NEATChooseMove
+    ; Temporarily comment out the NEAT call to isolate the issue
+    ; call NEATChooseMove
 
     ; Set the selected move in the buffer
+    ; ld hl, wBuffer
+    ; ld a, [wNEAT_SelectedMove]
+    ; ld [hl], a
+
+    ; For now, set a default move
     ld hl, wBuffer
-    ld a, [wNEAT_SelectedMove]
+    ld a, $01  ; Example move ID
     ld [hl], a
     ret
 
