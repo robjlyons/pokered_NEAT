@@ -55,9 +55,7 @@ ValidateMove:
     ld bc, 4
 ValidateLoop:
     ld a, [hl]
-    ld l, a ; Store the value in l (temporary register)
-    ld a, [wNEAT_SelectedMove]
-    cp l
+    cp [wNEAT_SelectedMove]
     jr z, .move_valid
     inc hl
     dec bc
@@ -69,7 +67,8 @@ ValidateLoop:
     ld [de], a
     ret
 .move_valid:
-    ld [de], l ; Use the stored value in l
+    ld a, [hl]  ; Move value from (hl) to a
+    ld [de], a  ; Store the value in de
     ret
 
 AIMoveChoiceModificationFunctionPointers:
