@@ -59,6 +59,8 @@ ValidateLoop:
     jr z, .move_valid
     inc hl
     dec bc
+    ld a, b
+    or c
     jr nz, ValidateLoop
     ; If move is not found, set to first known move (fallback)
     ld a, [wNEAT_EnemyMoves]
