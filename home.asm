@@ -14,19 +14,6 @@ SECTION "Home", ROM0
 INCLUDE "home/start.asm"
 INCLUDE "home/joypad.asm"
 
-SECTION "NEAT Variables", WRAM0
-
-wNEAT_EnemyHP:        ds 1
-wNEAT_PlayerHP:       ds 1
-wNEAT_EnemyMoves:     ds 4
-wNEAT_EnemyStatus:    ds 1
-wNEAT_PlayerStatus:   ds 1
-wNEAT_SelectedMove:   ds 1
-wNEAT_BattleMonStatus: ds 1
-wNEAT_EnemyMonStatus: ds 1
-wNEAT_wBattleMonHP:   ds 1
-wValidatedMove:       ds 1  ; Define wValidatedMove
-
 INCLUDE "data/maps/map_header_pointers.asm"
 
 INCLUDE "home/overworld.asm"
