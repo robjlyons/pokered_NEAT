@@ -10,6 +10,7 @@ wNEAT_SelectedMove:   ds 1
 wNEAT_BattleMonStatus: ds 1
 wNEAT_EnemyMonStatus: ds 1
 wNEAT_wBattleMonHP:   ds 1
+wValidatedMove:       ds 1  ; Define wValidatedMove
 
 ; Define memory locations for random byte generation
 SomeMemoryLocation:   ds 1
