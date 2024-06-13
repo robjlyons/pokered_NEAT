@@ -55,7 +55,8 @@ ValidateMove:
     ld bc, 4
 ValidateLoop:
     ld a, [hl]
-    cp [wNEAT_SelectedMove]
+    ld l, [wNEAT_SelectedMove] ; Load the selected move into l
+    cp l
     jr z, .move_valid
     inc hl
     dec bc
