@@ -55,7 +55,8 @@ ValidateMove:
     ld bc, 4
 ValidateLoop:
     ld a, [hl]
-    ld l, [wNEAT_SelectedMove] ; Load the selected move into l
+    ld l, a  ; Store the value in l (temporary register)
+    ld a, [wNEAT_SelectedMove] ; Load the selected move into a
     cp l
     jr z, .move_valid
     inc hl
@@ -68,7 +69,7 @@ ValidateLoop:
     ld [de], a
     ret
 .move_valid:
-    ld a, [hl]  ; Move value from (hl) to a
+    ld a, l  ; Move value from l to a
     ld [de], a  ; Store the value in de
     ret
 
