@@ -1,3 +1,16 @@
+SECTION "NEAT Data Definitions", WRAM0
+
+wNEAT_EnemyHP:        ds 1
+wNEAT_PlayerHP:       ds 1
+wNEAT_EnemyMoves:     ds 4
+wNEAT_EnemyStatus:    ds 1
+wNEAT_PlayerStatus:   ds 1
+wNEAT_SelectedMove:   ds 1
+wNEAT_BattleMonStatus: ds 1
+wNEAT_EnemyMonStatus: ds 1
+wNEAT_wBattleMonHP:   ds 1
+wValidatedMove:       ds 1  ; Add this line to define wValidatedMove
+
 SECTION "NULL", ROM0
 NULL::
 
