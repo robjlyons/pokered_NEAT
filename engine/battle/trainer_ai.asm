@@ -1,16 +1,10 @@
-INCLUDE "engine/debug/debug.asm"
-
 AIEnemyTrainerChooseMoves:
     ; Collect battle context data
     ld a, [wEnemyMonHP]
     ld [wNEAT_EnemyHP], a
-    ld d, a       ; Save for debugging
-    call PrintHex
 
     ld a, [wBattleMonHP]
     ld [wNEAT_BattleMonHP], a
-    ld e, a       ; Save for debugging
-    call PrintHex
 
     ; Copy enemy moves to NEAT buffer
     ld hl, wEnemyMonMoves
@@ -19,7 +13,6 @@ AIEnemyTrainerChooseMoves:
 CopyMovesLoop:
     ld a, [hl]
     ld [de], a
-    call PrintHex  ; Print each move
     inc hl
     inc de
     dec bc
@@ -29,13 +22,9 @@ CopyMovesLoop:
 
     ld a, [wEnemyMonStatus]
     ld [wNEAT_EnemyMonStatus], a
-    ld d, a       ; Save for debugging
-    call PrintHex
 
     ld a, [wBattleMonStatus]
     ld [wNEAT_BattleMonStatus], a
-    ld e, a       ; Save for debugging
-    call PrintHex
 
     ; Call NEAT algorithm to choose move
     call NEATChooseMove
