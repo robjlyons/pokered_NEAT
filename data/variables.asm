@@ -1,6 +1,5 @@
-SECTION "NEAT Data Definitions", WRAM0
+SECTION "NEAT Variables", WRAM0
 
-; NEAT related data
 wNEAT_EnemyHP:        ds 1
 wNEAT_PlayerHP:       ds 1
 wNEAT_EnemyMoves:     ds 4
@@ -9,8 +8,8 @@ wNEAT_PlayerStatus:   ds 1
 wNEAT_SelectedMove:   ds 1
 wNEAT_BattleMonStatus: ds 1
 wNEAT_EnemyMonStatus: ds 1
-wNEAT_wBattleMonHP:   ds 1
-wValidatedMove:       ds 1  ; Define wValidatedMove
+wNEAT_BattleMonHP:    ds 1  ; Fixed variable name
+wValidatedMove:       ds 1  ; Add wValidatedMove
 
 ; Define memory locations for random byte generation
 SomeMemoryLocation:   ds 1
