@@ -40,10 +40,12 @@ CopyMovesLoop:
 ValidateMove:
     ; Ensure the selected move is one of the known moves
     ld hl, wNEAT_EnemyMoves
+    ld de, wValidatedMove
     ld bc, 4
 ValidateLoop:
     ld a, [hl]
-    cp [wNEAT_SelectedMove]
+    ld l, [wNEAT_SelectedMove] ; Load the selected move into l
+    cp l
     jr z, .move_valid
     inc hl
     dec bc
@@ -52,10 +54,10 @@ ValidateLoop:
     jr nz, ValidateLoop
     ; If move is not found, set to first known move (fallback)
     ld a, [wNEAT_EnemyMoves]
-    ld [wValidatedMove], a
+    ld [de], a
     ret
 .move_valid:
-    ld [wValidatedMove], a
+    ld [de], a
     ret
 
 AIMoveChoiceModificationFunctionPointers:
