@@ -8,8 +8,8 @@ wNEAT_PlayerStatus:   ds 1
 wNEAT_SelectedMove:   ds 1
 wNEAT_BattleMonStatus: ds 1
 wNEAT_EnemyMonStatus: ds 1
-wNEAT_BattleMonHP:    ds 1  ; Fixed variable name
-wValidatedMove:       ds 1  ; Add wValidatedMove
+wNEAT_BattleMonHP:    ds 1
+wValidatedMove:       ds 1
 
 ; Define memory locations for random byte generation
 SomeMemoryLocation:   ds 1
