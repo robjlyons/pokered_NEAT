@@ -44,7 +44,8 @@ ValidateMove:
     ld bc, 4
 ValidateLoop:
     ld a, [hl]
-    ld l, [wNEAT_SelectedMove] ; Load the selected move into l
+    ld l, a  ; Move the value from memory to l
+    ld a, [wNEAT_SelectedMove] ; Load the selected move into a
     cp l
     jr z, .move_valid
     inc hl
@@ -57,8 +58,10 @@ ValidateLoop:
     ld [de], a
     ret
 .move_valid:
+    ld a, l  ; Move the value from l back to a
     ld [de], a
     ret
+
 
 AIMoveChoiceModificationFunctionPointers:
     dw AIMoveChoiceModification1
