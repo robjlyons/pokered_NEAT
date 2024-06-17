@@ -6,20 +6,6 @@ AIEnemyTrainerChooseMoves:
     ld a, [wBattleMonHP]
     ld [wNEAT_BattleMonHP], a
 
-    ; Copy enemy moves to NEAT buffer
-    ld hl, wEnemyMonMoves
-    ld de, wNEAT_EnemyMoves
-    ld bc, 4
-CopyMovesLoop:
-    ld a, [hl]
-    ld [de], a
-    inc hl
-    inc de
-    dec bc
-    ld a, b
-    or c
-    jr nz, CopyMovesLoop
-
     ld a, [wEnemyMonStatus]
     ld [wNEAT_EnemyMonStatus], a
 
@@ -29,7 +15,7 @@ CopyMovesLoop:
     ; Call NEAT algorithm to choose move
     call NEATChooseMove
 
-    ; Set the selected move in the buffer if it matches one of the known moves
+    ; Validate and set the selected move in the buffer if it matches one of the known moves
     ld a, [wNEAT_SelectedMove]
     call ValidateMove
     ld a, [wValidatedMove]
@@ -39,7 +25,7 @@ CopyMovesLoop:
 
 ValidateMove:
     ; Ensure the selected move is one of the known moves
-    ld hl, wNEAT_EnemyMoves
+    ld hl, wEnemyMonMoves
     ld de, wValidatedMove
     ld bc, 4
 ValidateLoop:
@@ -54,13 +40,14 @@ ValidateLoop:
     or c
     jr nz, ValidateLoop
     ; If move is not found, set to first known move (fallback)
-    ld a, [wNEAT_EnemyMoves]
+    ld a, [wEnemyMonMoves]
     ld [de], a
     ret
 .move_valid:
     ld a, l  ; Move the value from l back to a
     ld [de], a
     ret
+
 
 AIMoveChoiceModificationFunctionPointers:
     dw AIMoveChoiceModification1
@@ -233,11 +220,17 @@ ReadMove:
     ret
 
 INCLUDE "data/trainers/move_choices.asm"
+
 INCLUDE "data/trainers/pic_pointers_money.asm"
+
 INCLUDE "data/trainers/names.asm"
+
 INCLUDE "engine/battle/misc.asm"
+
 INCLUDE "engine/battle/read_trainer_party.asm"
+
 INCLUDE "data/trainers/special_moves.asm"
+
 INCLUDE "data/trainers/parties.asm"
 
 TrainerAI:
