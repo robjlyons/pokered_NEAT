@@ -32,7 +32,7 @@ PrintHex:
 .digit_is_num
     add a, "0"
 .store_digit
-    ld e, a
+    ld de, hl
     call PrintChar
     dec b
     jr nz, .next_digit
