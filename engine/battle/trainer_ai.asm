@@ -11,8 +11,10 @@ AIEnemyTrainerChooseMoves:
     ld de, wNEAT_EnemyMoves
     ld bc, 4
 CopyMovesLoop:
-    ld a, [hl+]
-    ld [de+], a
+    ld a, [hl]
+    ld [de], a
+    inc hl
+    inc de
     dec bc
     ld a, b
     or c
@@ -31,28 +33,29 @@ CopyMovesLoop:
     ld a, [wNEAT_SelectedMove]
     call ValidateMove
     ld a, [wValidatedMove]
-    ld [wBuffer], a
+    ld hl, wBuffer
+    ld [hl], a
     ret
 
 ValidateMove:
     ; Ensure the selected move is one of the known moves
     ld hl, wNEAT_EnemyMoves
-    ld de, wValidatedMove
     ld bc, 4
 ValidateLoop:
-    ld a, [hl+]
+    ld a, [hl]
     cp [wNEAT_SelectedMove]
     jr z, .move_valid
+    inc hl
     dec bc
     ld a, b
     or c
     jr nz, ValidateLoop
     ; If move is not found, set to first known move (fallback)
     ld a, [wNEAT_EnemyMoves]
-    ld [de], a
+    ld [wValidatedMove], a
     ret
 .move_valid:
-    ld [de], a
+    ld [wValidatedMove], a
     ret
 
 AIMoveChoiceModificationFunctionPointers:
