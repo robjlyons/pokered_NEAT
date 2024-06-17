@@ -1,4 +1,6 @@
-# Pokémon Red and Blue [![Build Status][ci-badge]][ci]
+# Pokémon Red and Blue With NEAT For ENEMY AI [![Build Status][ci-badge]][ci]
+
+This is a WIP project to replace the enemy AI with an implementation of NEAT which learns from trial and error.
 
 This is a disassembly of Pokémon Red and Blue.
 
