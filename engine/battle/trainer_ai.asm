@@ -11,10 +11,8 @@ AIEnemyTrainerChooseMoves:
     ld de, wNEAT_EnemyMoves
     ld bc, 4
 CopyMovesLoop:
-    ld a, [hl]
-    ld [de], a
-    inc hl
-    inc de
+    ld a, [hl+]
+    ld [de+], a
     dec bc
     ld a, b
     or c
@@ -33,8 +31,7 @@ CopyMovesLoop:
     ld a, [wNEAT_SelectedMove]
     call ValidateMove
     ld a, [wValidatedMove]
-    ld hl, wBuffer
-    ld [hl], a
+    ld [wBuffer], a
     ret
 
 ValidateMove:
@@ -43,12 +40,9 @@ ValidateMove:
     ld de, wValidatedMove
     ld bc, 4
 ValidateLoop:
-    ld a, [hl]
-    ld l, a  ; Store the value in l (temporary register)
-    ld a, [wNEAT_SelectedMove] ; Load the selected move into a
-    cp l
+    ld a, [hl+]
+    cp [wNEAT_SelectedMove]
     jr z, .move_valid
-    inc hl
     dec bc
     ld a, b
     or c
@@ -58,8 +52,7 @@ ValidateLoop:
     ld [de], a
     ret
 .move_valid:
-    ld a, l  ; Move value from l to a
-    ld [de], a  ; Store the value in de
+    ld [de], a
     ret
 
 AIMoveChoiceModificationFunctionPointers:
