@@ -73,7 +73,6 @@ ValidateLoop:
     ld [de], a  ; Store the value in de
     ret
 
-
 AIMoveChoiceModificationFunctionPointers:
     dw AIMoveChoiceModification1
     dw AIMoveChoiceModification2
