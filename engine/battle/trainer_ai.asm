@@ -8,7 +8,7 @@ AIEnemyTrainerChooseMoves:
     call PrintHex
 
     ld a, [wBattleMonHP]
-    ld [wNEAT_wBattleMonHP], a
+    ld [wNEAT_BattleMonHP], a
     ld e, a       ; Save for debugging
     call PrintHex
 
@@ -72,6 +72,7 @@ ValidateLoop:
     ld a, l  ; Move value from l to a
     ld [de], a  ; Store the value in de
     ret
+
 
 AIMoveChoiceModificationFunctionPointers:
     dw AIMoveChoiceModification1
