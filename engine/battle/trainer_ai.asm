@@ -6,40 +6,19 @@ AIEnemyTrainerChooseMoves:
     ld a, [wBattleMonHP]
     ld [wNEAT_PlayerHP], a
 
+    ld a, [wEnemyMonStatus]
+    ld [wNEAT_EnemyStatus], a
+
+    ld a, [wBattleMonStatus]
+    ld [wNEAT_PlayerStatus], a
+
     ; Call NEAT algorithm to choose move
     call NEATChooseMove
 
-    ; Set the selected move in the buffer if it matches one of the known moves
+    ; Set the selected move in the buffer
     ld a, [wNEAT_SelectedMove]
-    call ValidateMove
-    ld a, [wValidatedMove]
     ld hl, wBuffer
     ld [hl], a
-    ret
-
-ValidateMove:
-    ; Ensure the selected move is one of the known moves
-    ld hl, wEnemyMonMoves
-    ld de, wValidatedMove
-    ld bc, 4
-ValidateLoop:
-    ld a, [hl]
-    ld l, a  ; Move the value from memory to l
-    ld a, [wNEAT_SelectedMove] ; Load the selected move into a
-    cp l
-    jr z, .move_valid
-    inc hl
-    dec bc
-    ld a, b
-    or c
-    jr nz, ValidateLoop
-    ; If move is not found, set to first known move (fallback)
-    ld a, [wEnemyMonMoves]
-    ld [de], a
-    ret
-.move_valid:
-    ld a, l  ; Move the value from l back to a
-    ld [de], a
     ret
 
 AIMoveChoiceModificationFunctionPointers:
@@ -48,7 +27,7 @@ AIMoveChoiceModificationFunctionPointers:
     dw AIMoveChoiceModification3
     dw AIMoveChoiceModification4 ; unused, does nothing
 
-; Discourages moves that cause no damage but only a status ailment if player's mon already has one
+; discourages moves that cause no damage but only a status ailment if player's mon already has one
 AIMoveChoiceModification1:
     ld a, [wBattleMonStatus]
     and a
@@ -91,8 +70,9 @@ StatusAilmentMoveEffects:
     db PARALYZE_EFFECT
     db -1 ; end
 
-; Slightly encourage moves with specific effects.
-; In particular, stat-modifying moves and other move effects that fall in-between
+; slightly encourage moves with specific effects.
+; in particular, stat-modifying moves and other move effects
+; that fall in-between
 AIMoveChoiceModification2:
     ld a, [wAILayer2Encouragement]
     cp $1
@@ -119,12 +99,12 @@ AIMoveChoiceModification2:
     cp POISON_EFFECT
     jr c, .preferMove
     jr .nextMove
-.preferMove:
+.preferMove
     dec [hl] ; slightly encourage this move
     jr .nextMove
 
-; Encourages moves that are effective against the player's mon (even if non-damaging).
-; Discourage damaging moves that are ineffective or not very effective against the player's mon,
+; encourages moves that are effective against the player's mon (even if non-damaging).
+; discourage damaging moves that are ineffective or not very effective against the player's mon,
 ; unless there's no damaging move that deals at least neutral damage
 AIMoveChoiceModification3:
     ld hl, wBuffer - 1 ; temp move selection array (-1 byte offset)
@@ -152,8 +132,7 @@ AIMoveChoiceModification3:
     jr c, .notEffectiveMove
     dec [hl] ; slightly encourage this move
     jr .nextMove
-.notEffectiveMove:
-    ; Discourages non-effective moves if better moves are available
+.notEffectiveMove ; discourages non-effective moves if better moves are available
     push hl
     push de
     push bc
@@ -183,9 +162,9 @@ AIMoveChoiceModification3:
     and a
     jr nz, .betterMoveFound ; damaging moves of a different type are considered to be better moves
     jr .loopMoves
-.betterMoveFound:
+.betterMoveFound
     ld c, a
-.done:
+.done
     ld a, c
     pop bc
     pop de
@@ -245,7 +224,7 @@ TrainerAI:
     dec hl
     ld a, [hli]
     ld [wAICount], a
-.getpointer:
+.getpointer
     ld a, [hli]
     ld h, [hl]
     ld l, a
@@ -288,7 +267,7 @@ CooltrainerFAI:
     jp AISwitchIfEnoughMons
 
 BrockAI:
-    ; If his active monster has a status condition, use a full heal
+    ; if his active monster has a status condition, use a full heal
     ld a, [wEnemyMonStatus]
     and a
     ret z
@@ -381,7 +360,7 @@ GenericAI:
     and a ; clear carry
     ret
 
-; End of individual trainer AI routines
+; end of individual trainer AI routines
 
 DecrementAICount:
     ld hl, wAICount
@@ -418,25 +397,25 @@ AIUseFullRestore:
     jr AIPrintItemUseAndUpdateHPBar
 
 AIUsePotion:
-    ; Enemy trainer heals his monster with a potion
+    ; enemy trainer heals his monster with a potion
     ld a, POTION
     ld b, 20
     jr AIRecoverHP
 
 AIUseSuperPotion:
-    ; Enemy trainer heals his monster with a super potion
+    ; enemy trainer heals his monster with a super potion
     ld a, SUPER_POTION
     ld b, 50
     jr AIRecoverHP
 
 AIUseHyperPotion:
-    ; Enemy trainer heals his monster with a hyper potion
+    ; enemy trainer heals his monster with a hyper potion
     ld a, HYPER_POTION
     ld b, 200
     ; fallthrough
 
 AIRecoverHP:
-    ; Heal b HP and print "trainer used $(a) on pokemon!"
+    ; heal b HP and print "trainer used $(a) on pokemon!"
     ld [wAIItem], a
     ld hl, wEnemyMonHP + 1
     ld a, [hl]
@@ -451,7 +430,7 @@ AIRecoverHP:
     inc a
     ld [hl], a
     ld [wHPBarNewHP+1], a
-.next:
+.next
     inc hl
     ld a, [hld]
     ld b, a
@@ -474,7 +453,7 @@ AIRecoverHP:
     ld a, [de]
     ld [hl], a
     ld [wHPBarNewHP+1], a
-    ; Fallthrough
+    ; fallthrough
 
 AIPrintItemUseAndUpdateHPBar:
     call AIPrintItemUse_
@@ -485,22 +464,22 @@ AIPrintItemUseAndUpdateHPBar:
     jp DecrementAICount
 
 AISwitchIfEnoughMons:
-    ; Enemy trainer switches if there are 2 or more unfainted mons in party
+    ; enemy trainer switches if there are 2 or more unfainted mons in party
     ld a, [wEnemyPartyCount]
     ld c, a
     ld hl, wEnemyMon1HP
 
-    ld d, 0 ; Keep count of unfainted monsters
+    ld d, 0 ; keep count of unfainted monsters
 
-    ; Count how many monsters haven't fainted yet
-.loop:
+    ; count how many monsters haven't fainted yet
+.loop
     ld a, [hli]
     ld b, a
     ld a, [hld]
     or b
-    jr z, .Fainted ; Has monster fainted?
+    jr z, .Fainted ; has monster fainted?
     inc d
-.Fainted:
+.Fainted
     push bc
     ld bc, wEnemyMon2 - wEnemyMon1
     add hl, bc
@@ -508,14 +487,14 @@ AISwitchIfEnoughMons:
     dec c
     jr nz, .loop
 
-    ld a, d ; How many available monsters are there?
-    cp 2    ; Don't bother if only 1
+    ld a, d ; how many available monsters are there?
+    cp 2    ; don't bother if only 1
     jp nc, SwitchEnemyMon
     and a
     ret
 
 SwitchEnemyMon:
-    ; Prepare to withdraw the active monster: copy hp, number, and status to roster
+    ; prepare to withdraw the active monster: copy hp, number, and status to roster
     ld a, [wEnemyMonPartyPos]
     ld hl, wEnemyMon1HP
     ld bc, wEnemyMon2 - wEnemyMon1
@@ -554,14 +533,14 @@ AIUseFullHeal:
     jp AIPrintItemUse
 
 AICureStatus:
-    ; Cures the status of enemy's active pokemon
+    ; cures the status of enemy's active pokemon
     ld a, [wEnemyMonPartyPos]
     ld hl, wEnemyMon1Status
     ld bc, wEnemyMon2 - wEnemyMon1
     call AddNTimes
     xor a
-    ld [hl], a ; Clear status in enemy team roster
-    ld [wEnemyMonStatus], a ; Clear status of active enemy
+    ld [hl], a ; clear status in enemy team roster
+    ld [wEnemyMonStatus], a ; clear status of active enemy
     ld hl, wEnemyBattleStatus3
     res 0, [hl]
     ret
@@ -588,7 +567,7 @@ AIUseDireHit: ; unused
     jp AIPrintItemUse
 
 AICheckIfHPBelowFraction:
-    ; Return carry if enemy trainer's current HP is below 1 / a of the maximum
+    ; return carry if enemy trainer's current HP is below 1 / a of the maximum
     ldh [hDivisor], a
     ld hl, wEnemyMonMaxHP
     ld a, [hli]
@@ -631,7 +610,7 @@ AIUseXSpeed:
 AIUseXSpecial:
     ld b, $D
     ld a, X_SPECIAL
-    ; Fallthrough
+    ; fallthrough
 
 AIIncreaseStat:
     ld [wAIItem], a
@@ -661,7 +640,7 @@ AIPrintItemUse:
     jp DecrementAICount
 
 AIPrintItemUse_:
-    ; Print "x used [wAIItem] on z!"
+    ; print "x used [wAIItem] on z!"
     ld a, [wAIItem]
     ld [wd11e], a
     call GetItemName
