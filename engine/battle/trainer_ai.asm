@@ -4,13 +4,13 @@ AIEnemyTrainerChooseMoves:
     ld [wNEAT_EnemyHP], a
 
     ld a, [wBattleMonHP]
-    ld [wNEAT_PlayerHP], a
+    ld [wNEAT_BattleMonHP], a
 
     ld a, [wEnemyMonStatus]
-    ld [wNEAT_EnemyStatus], a
+    ld [wNEAT_EnemyMonStatus], a
 
     ld a, [wBattleMonStatus]
-    ld [wNEAT_PlayerStatus], a
+    ld [wNEAT_BattleMonStatus], a
 
     ; Call NEAT algorithm to choose move
     call NEATChooseMove
@@ -192,11 +192,17 @@ ReadMove:
     ret
 
 INCLUDE "data/trainers/move_choices.asm"
+
 INCLUDE "data/trainers/pic_pointers_money.asm"
+
 INCLUDE "data/trainers/names.asm"
+
 INCLUDE "engine/battle/misc.asm"
+
 INCLUDE "engine/battle/read_trainer_party.asm"
+
 INCLUDE "data/trainers/special_moves.asm"
+
 INCLUDE "data/trainers/parties.asm"
 
 TrainerAI:
