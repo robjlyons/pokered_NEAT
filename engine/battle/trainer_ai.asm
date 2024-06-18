@@ -4,13 +4,13 @@ AIEnemyTrainerChooseMoves:
     ld [wNEAT_EnemyHP], a
 
     ld a, [wBattleMonHP]
-    ld [wNEAT_BattleMonHP], a
+    ld [wNEAT_PlayerHP], a
 
     ld a, [wEnemyMonStatus]
-    ld [wNEAT_EnemyMonStatus], a
+    ld [wNEAT_EnemyStatus], a
 
     ld a, [wBattleMonStatus]
-    ld [wNEAT_BattleMonStatus], a
+    ld [wNEAT_PlayerStatus], a
 
     ; Call NEAT algorithm to choose move
     call NEATChooseMove
