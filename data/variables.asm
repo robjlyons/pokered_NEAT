@@ -5,6 +5,9 @@ wNEAT_PlayerHP:       ds 1
 wNEAT_EnemyStatus:    ds 1
 wNEAT_PlayerStatus:   ds 1
 wNEAT_SelectedMove:   ds 1
+wNEAT_BattleMonStatus: ds 1
+wNEAT_EnemyMonStatus: ds 1
+wNEAT_BattleMonHP:    ds 1
 
 ; Define memory locations for random byte generation
 SomeMemoryLocation:   ds 1
