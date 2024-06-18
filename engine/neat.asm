@@ -42,12 +42,12 @@ SECTION "NEAT Move Selection", ROMX
 NEATChooseMove:
     ; Placeholder for NEAT algorithm
     ; Example: Simple move selection based on weights
-    ld hl, wEnemyMonMoves  ; Load the enemy moves
+    ld hl, NEAT_Population
     ld a, [NEAT_CurrentIndex]
     ld l, a
     ld h, 0
     add hl, hl
-    add hl, hl  ; hl = wEnemyMonMoves + CurrentIndex * 4
+    add hl, hl  ; hl = NEAT_Population + CurrentIndex * NEAT_NumWeights
 
     ; For simplicity, select the move with the highest weight
     push hl
