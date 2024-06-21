@@ -1,7 +1,8 @@
 ; Ensure these constants are only defined if not already defined elsewhere
-MOVE_DAMAGE_WEIGHT:        equ 5
-MOVE_EFFECTIVENESS_WEIGHT: equ 3
-MOVE_STATUS_WEIGHT:        equ 2
+; Defining constants using '='
+MOVE_DAMAGE_WEIGHT         = 5
+MOVE_EFFECTIVENESS_WEIGHT  = 3
+MOVE_STATUS_WEIGHT         = 2
 
 ; Function to choose moves based on state
 AIEnemyTrainerChooseMoves:
