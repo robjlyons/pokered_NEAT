@@ -1,6 +1,3 @@
-; creates a set of moves that may be used and returns its address in hl
-; unused slots are filled with 0, all used slots may be chosen with equal probability
-
 ; Simple PPO Policy for choosing moves
 
 InitializePolicy:
@@ -20,6 +17,18 @@ ChooseMovePPO:
     ; Generate a random number between 0 and 99
     call Random
     ld b, a
+
+    ; Load the moves from the enemy Pokémon
+    ld hl, wEnemyMonMoves
+    ld c, [hl]     ; Move 1
+    inc hl
+    ld d, [hl]     ; Move 2
+    inc hl
+    ld e, [hl]     ; Move 3
+    inc hl
+    ld h, [hl]     ; Move 4
+
+    ; Check if the generated random number falls within the range of each move's probability
     ld hl, wPolicyMove1
     ld a, [hl]
     cp b
@@ -35,16 +44,16 @@ ChooseMovePPO:
     inc hl
     ; Default to Move 4
 Move4:
-    ld a, 3
+    ld a, h
     ret
 Move3:
-    ld a, 2
+    ld a, e
     ret
 Move2:
-    ld a, 1
+    ld a, d
     ret
 Move1:
-    ld a, 0
+    ld a, c
     ret
 
 AIEnemyTrainerChooseMoves:
