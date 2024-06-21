@@ -1,31 +1,27 @@
-INCLUDE "data/variables.asm"
+; Define constants for memory locations and weights
+wBuffer:                   ds 4       ; Buffer for selected moves
+wEnemyDisabledMove:        ds 1       ; Disabled move for the enemy
+wTrainerClass:             ds 1       ; Trainer class
+TrainerClassMoveChoiceModifications: ds 20 ; Placeholder for trainer modifications
+NUM_MOVES:                 equ 4      ; Number of moves
 
-DEF NUM_ACTIONS  EQU 4
-DEF MOVE_1       EQU 1
-DEF MOVE_2       EQU 2
-DEF MOVE_3       EQU 3
-DEF MOVE_4       EQU 4
-DEF DEFAULT_MOVE EQU MOVE_1
+; Heuristic weights (example values)
+MOVE_DAMAGE_WEIGHT:        equ 5
+MOVE_EFFECTIVENESS_WEIGHT: equ 3
+MOVE_STATUS_WEIGHT:        equ 2
 
-SECTION "AIEnemyTrainerChooseMoves", ROMX
-
-; Memory locations for PPO model parameters (these are placeholders)
-DEF PPO_PARAMS   EQU $8000
-DEF PPO_STATE    EQU $8100
-DEF PPO_ACTIONS  EQU $8200
-DEF wRNGSeed     EQU $C000  ; Define the RNG seed location (example address)
-
+; Function to choose moves based on state
 AIEnemyTrainerChooseMoves:
-    ; Initialize PPO model if needed
-    CALL InitializePPOModel
+    ; Initialize wBuffer with default move values
+    ld a, $a
+    ld hl, wBuffer
+    ld [hli], a
+    ld [hli], a
+    ld [hli], a
+    ld [hl], a
 
-    ; Call PPO model to choose action
-    CALL PPOChooseAction
-
-    ; Set chosen move to wBuffer
-    LD HL, wBuffer
-    LD [HL], A
-    ld a, [wEnemyDisabledMove] ; forbid disabled move (if any)
+    ; Disable any disabled move
+    ld a, [wEnemyDisabledMove]
     swap a
     and $f
     jr z, .noMoveDisabled
@@ -33,239 +29,107 @@ AIEnemyTrainerChooseMoves:
     dec a
     ld c, a
     ld b, $0
-    add hl, bc    ; advance pointer to forbidden move
-    ld [hl], $50  ; forbid (highly discourage) disabled move
+    add hl, bc
+    ld [hl], $50
+.noMoveDisabled:
 
-    ; Handle less than 4 moves case
-    LD HL, wEnemyMonMoves
-    LD A, [HL]
-    CP 0
-    JR NZ, .has_moves
-    LD A, DEFAULT_MOVE
-.noMoveDisabled
-	ld hl, TrainerClassMoveChoiceModifications
-	ld a, [wTrainerClass]
-	ld b, a
-.has_moves:
-    LD HL, wBuffer
-    LD [HL], A
+    ; Calculate move scores based on heuristics
+    call CalculateMoveScores
 
-    RET
+    ; Select the best move based on scores
+    call SelectBestMove
 
-InitializePPOModel:
-    ; Initialize PPO model parameters if needed
-    ; Placeholder: Assuming we set some initial values
-    ; For now, we'll just set PPO_PARAMS to some default values
-    LD HL, PPO_PARAMS
-    LD [HL], $00  ; Example parameter
-    INC HL
-    LD [HL], $01  ; Example parameter
-    INC HL
-    LD [HL], $02  ; Example parameter
-    INC HL
-    LD [HL], $03  ; Example parameter
-    RET
-
-PPOChooseAction:
-    ; Choose a random move among the valid ones
-    CALL GetRandomNumber
-    AND $03  ; Restrict to 4 options (0-3)
-    LD B, A
-    LD HL, wEnemyMonMoves
-    ADD HL, BC  ; Calculate effective address HL + B
-.check_valid_move:
-    LD A, [HL]
-    CP 0
-    JR NZ, .move_chosen
-    ; If the move is zero, choose the default move
-    LD A, DEFAULT_MOVE
-.move_chosen:
-    RET
-
-GetRandomNumber:
-    ; Get a random number in range 0-255 using the game's RNG
-    LD HL, wRNGSeed
-    LD A, [HL]
-    LD E, A
-    LD D, $00
-    ; Simple LFSR (Linear Feedback Shift Register) for demonstration
-    LD B, $08  ; 8 bits
-.RandomLoop:
-    LD A, E
-    RRCA
-    JR NC, .SkipXOR
-    XOR $B4
-.SkipXOR:
-    RR E
-    RL D
-    DEC B
-    JR NZ, .RandomLoop
-    LD A, E
-    LD [HL], A
-    RET
-
-; discourages moves that cause no damage but only a status ailment if player's mon already has one
-AIMoveChoiceModification1:
-    ld a, [wBattleMonStatus]
-    and a
-    ret z ; return if no status ailment on player's mon
-    ld hl, wBuffer - 1 ; temp move selection array (-1 byte offset)
-    ld de, wEnemyMonMoves ; enemy moves
-    ld b, NUM_MOVES + 1
-.nextMove
-    dec b
-    ret z ; processed all 4 moves
-    inc hl
-    ld a, [de]
-    and a
-    ret z ; no more moves in move set
-    inc de
-    call ReadMove
-    ld a, [wEnemyMovePower]
-    and a
-    jr nz, .nextMove
-    ld a, [wEnemyMoveEffect]
-    push hl
-    push de
-    push bc
-    ld hl, StatusAilmentMoveEffects
-    ld de, 1
-    call IsInArray
-    pop bc
-    pop de
-    pop hl
-    jr nc, .nextMove
-    ld a, [hl]
-    add a, $5 ; heavily discourage move
-    ld [hl], a
-    jr .nextMove
-
-StatusAilmentMoveEffects:
-    db EFFECT_01 ; unused sleep effect
-    db SLEEP_EFFECT
-    db POISON_EFFECT
-    db PARALYZE_EFFECT
-    db -1 ; end
-
-; slightly encourage moves with specific effects.
-; in particular, stat-modifying moves and other move effects
-; that fall in-between
-AIMoveChoiceModification2:
-    ld a, [wAILayer2Encouragement]
-    cp $1
-    ret nz
-    ld hl, wBuffer - 1 ; temp move selection array (-1 byte offset)
-    ld de, wEnemyMonMoves ; enemy moves
-    ld b, NUM_MOVES + 1
-.nextMove
-    dec b
-    ret z ; processed all 4 moves
-    inc hl
-    ld a, [de]
-    and a
-    ret z ; no more moves in move set
-    inc de
-    call ReadMove
-    ld a, [wEnemyMoveEffect]
-    cp ATTACK_UP1_EFFECT
-    jr c, .nextMove
-    cp BIDE_EFFECT
-    jr c, .preferMove
-    cp ATTACK_UP2_EFFECT
-    jr c, .nextMove
-    cp POISON_EFFECT
-    jr c, .preferMove
-    jr .nextMove
-.preferMove
-    dec [hl] ; slightly encourage this move
-    jr .nextMove
-
-; encourages moves that are effective against the player's mon (even if non-damaging).
-; discourage damaging moves that are ineffective or not very effective against the player's mon,
-; unless there's no damaging move that deals at least neutral damage
-AIMoveChoiceModification3:
-    ld hl, wBuffer - 1 ; temp move selection array (-1 byte offset)
-    ld de, wEnemyMonMoves ; enemy moves
-    ld b, NUM_MOVES + 1
-.nextMove
-    dec b
-    ret z ; processed all 4 moves
-    inc hl
-    ld a, [de]
-    and a
-    ret z ; no more moves in move set
-    inc de
-    call ReadMove
-    push hl
-    push bc
-    push de
-    callfar AIGetTypeEffectiveness
-    pop de
-    pop bc
-    pop hl
-    ld a, [wTypeEffectiveness]
-    cp $10
-    jr z, .nextMove
-    jr c, .notEffectiveMove
-    dec [hl] ; slightly encourage this move
-    jr .nextMove
-.notEffectiveMove ; discourages non-effective moves if better moves are available
-    push hl
-    push de
-    push bc
-    ld a, [wEnemyMoveType]
-    ld d, a
-    ld hl, wEnemyMonMoves  ; enemy moves
-    ld b, NUM_MOVES + 1
-    ld c, $0
-.loopMoves
-    dec b
-    jr z, .done
-    ld a, [hli]
-    and a
-    jr z, .done
-    call ReadMove
-    ld a, [wEnemyMoveEffect]
-    cp SUPER_FANG_EFFECT
-    jr z, .betterMoveFound ; Super Fang is considered to be a better move
-    cp SPECIAL_DAMAGE_EFFECT
-    jr z, .betterMoveFound ; any special damage moves are considered to be better moves
-    cp FLY_EFFECT
-    jr z, .betterMoveFound ; Fly is considered to be a better move
-    ld a, [wEnemyMoveType]
-    cp d
-    jr z, .loopMoves
-    ld a, [wEnemyMovePower]
-    and a
-    jr nz, .betterMoveFound ; damaging moves of a different type are considered to be better moves
-    jr .loopMoves
-.betterMoveFound
-    ld c, a
-.done
-    ld a, c
-    pop bc
-    pop de
-    pop hl
-    and a
-    jr z, .nextMove
-    inc [hl] ; slightly discourage this move
-    jr .nextMove
-AIMoveChoiceModification4:
+    ; Return the address of the chosen move set
+    ld hl, wBuffer
     ret
 
-ReadMove:
-    push hl
-    push de
+; Function to calculate move scores based on heuristics
+CalculateMoveScores:
+    ld hl, wBuffer
+    ld de, wEnemyMonMoves
+    ld c, NUM_MOVES
+.loopCalculateScores:
+    ld a, [de]
+    inc de
+    and a
+    jr z, .skipMove
+
+    ; Calculate score for this move
+    call CalculateMoveScore
+    ld [hl], a
+
+.skipMove:
+    inc hl
+    dec c
+    jr nz, .loopCalculateScores
+    ret
+
+; Function to calculate the score for a single move
+CalculateMoveScore:
+    ; Assume move power and effectiveness are stored in specific locations
+    ld a, [wEnemyMovePower]
+    ld b, MOVE_DAMAGE_WEIGHT
+    call mul ; Score = power * weight
+    ld c, a
+
+    ; Add effectiveness to the score
+    ld a, [wTypeEffectiveness]
+    ld b, MOVE_EFFECTIVENESS_WEIGHT
+    call mul
+    add a, c
+    ld c, a
+
+    ; Add status effect weight if applicable
+    ld a, [wEnemyMoveEffect]
+    ld b, MOVE_STATUS_WEIGHT
+    call mul
+    add a, c
+
+    ret
+
+; Function to select the best move based on calculated scores
+SelectBestMove:
+    ld hl, wBuffer
+    ld de, wBuffer
+    ld c, NUM_MOVES
+    ld a, 0
+    ld b, 0
+
+.loopSelectBestMove:
+    ld a, [hl]
+    cp b
+    jr nc, .nextMove
+    ld b, a
+    ld de, hl
+
+.nextMove:
+    inc hl
+    dec c
+    jr nz, .loopSelectBestMove
+
+    ; Set the best move to the first slot
+    ld a, [de]
+    ld hl, wBuffer
+    ld [hl], a
+    ret
+
+; Sample multiplier routine (Game Boy has no MUL instruction)
+mul:
     push bc
+    push hl
+    ld hl, $0000
+    or a
+    jr z, .done
+
+.loopMul:
+    add hl, bc
     dec a
-    ld hl, Moves
-    ld bc, MOVE_LENGTH
-    call AddNTimes
-    ld de, wEnemyMoveNum
-    call CopyData
-    pop bc
-    pop de
+    jr nz, .loopMul
+
+.done:
+    ld a, l
     pop hl
+    pop bc
     ret
 
 INCLUDE "data/trainers/move_choices.asm"
