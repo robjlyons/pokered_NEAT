@@ -130,7 +130,6 @@ GetRandomNumber:
     LD [HL], A
     RET
 
-; Define an area in RAM for valid moves
 SECTION "ValidMoves", WRAM0
 wValidMoves: DS NUM_ACTIONS
 
