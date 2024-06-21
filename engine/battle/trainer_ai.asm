@@ -129,6 +129,94 @@ PPOModelFunction:
     ld [hl], a
     ret
 
+; Define storage for rewards and learning rate
+reward:       db 0
+learningRate: db 1  ; Example learning rate (0.01 scaled to 1 for simplicity)
+
+; Calculate reward based on the outcome of the battle
+CalculateReward:
+    ; Check if the enemy Pokémon is defeated
+    ld a, [wEnemyMonHP + 1]
+    cp 0
+    jr z, .enemyDefeated
+
+    ; Check if the player's Pokémon is defeated
+    ld a, [wPlayerMonHP + 1]
+    cp 0
+    jr z, .playerDefeated
+
+    ; Neutral action reward
+    ld a, 0
+    ld [reward], a
+    ret
+
+.enemyDefeated:
+    ld a, 100  ; Reward for winning
+    ld [reward], a
+    ret
+
+.playerDefeated:
+    ld a, -100 ; Penalty for losing
+    ld [reward], a
+    ret
+
+; Update the move probabilities based on the reward
+UpdatePolicy:
+    ld hl, stateMoveProbabilities
+    ld a, [selectedMove]
+    ld b, a
+
+    ; Adjust the probability for the selected move
+    ld a, [reward]
+    ld c, a
+    ld a, [learningRate]
+    mul c  ; reward * learningRate
+    add [hl + b]
+    ld [hl + b], a
+
+    ; Normalize probabilities
+    call NormalizeProbabilities
+
+    ret
+
+; Normalize probabilities to ensure they sum to 100
+NormalizeProbabilities:
+    ld hl, stateMoveProbabilities
+    ld a, [hl]
+    ld b, a
+    inc hl
+    ld a, [hl]
+    add b
+    ld c, a
+    inc hl
+    ld a, [hl]
+    add c
+    ld d, a
+    inc hl
+    ld a, [hl]
+    add d
+    ld e, a  ; Sum of all probabilities
+
+    ; Normalize each probability
+    ld hl, stateMoveProbabilities
+    ld a, [hl]
+    div e  ; a = a / e
+    ld [hl], a
+    inc hl
+    ld a, [hl]
+    div e
+    ld [hl], a
+    inc hl
+    ld a, [hl]
+    div e
+    ld [hl], a
+    inc hl
+    ld a, [hl]
+    div e
+    ld [hl], a
+
+    ret
+
 ; Define storage for state representation and move probabilities
 stateEnemyHP:      db 0
 stateTypeEffectiveness: db 0
