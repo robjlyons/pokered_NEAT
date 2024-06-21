@@ -76,7 +76,11 @@ ApplyMoveModifications:
     ret
 
 ExecuteModification:
-    jp (hl)
+    ld (ExecuteModificationReturnAddress), sp
+    ld sp, hl
+    ret
+ExecuteModificationReturnAddress:
+    dw 0
 
 SampleMoveFromPolicy:
     ld hl, wBuffer
