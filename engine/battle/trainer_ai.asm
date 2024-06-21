@@ -7,30 +7,21 @@ PrepareState:
     ld [statePlayerHP], a
 
     ; Load types of both Pokémon
-    ld a, [wEnemyMonType1]
-    ld [stateEnemyType1], a
-    ld a, [wEnemyMonType2]
-    ld [stateEnemyType2], a
-    ld a, [wPlayerMonType1]
-    ld [statePlayerType1], a
-    ld a, [wPlayerMonType2]
-    ld [statePlayerType2], a
+    ld a, [wTypeEffectiveness]
+    ld [wEnemyMoveType], a
+    ld a, [wEnemyMoveEffect]
+    ld [wEnemyMovePower], a
 
     ; Load available moves and their properties
     ld hl, wEnemyMonMoves
-    ld de, stateMoves
     ld bc, NUM_MOVES * MOVE_LENGTH
     call CopyData
 
     ; Load status conditions
-    ld a, [wEnemyMonStatus]
+    ld a, [wBattleMonStatus]
     ld [stateEnemyStatus], a
     ld a, [wPlayerMonStatus]
     ld [statePlayerStatus], a
-
-    ; Load any active field effects
-    ld a, [wFieldEffects]
-    ld [stateFieldEffects], a
 
     ret
 
