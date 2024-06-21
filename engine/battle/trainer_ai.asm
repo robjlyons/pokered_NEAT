@@ -48,15 +48,21 @@ SelectMoveBasedOnProbabilities:
     ld [cumulativeProb1], a
     inc hl
     ld a, [hl]
-    add [cumulativeProb1]
+    ld b, a
+    ld a, [cumulativeProb1]
+    add b
     ld [cumulativeProb2], a
     inc hl
     ld a, [hl]
-    add [cumulativeProb2]
+    ld b, a
+    ld a, [cumulativeProb2]
+    add b
     ld [cumulativeProb3], a
     inc hl
     ld a, [hl]
-    add [cumulativeProb3]
+    ld b, a
+    ld a, [cumulativeProb3]
+    add b
     ld [cumulativeProb4], a
 
     ; Generate a random number
@@ -74,22 +80,32 @@ SelectMoveBasedOnProbabilities:
     jr .selectMove4
 
 .selectMove1:
-    ld a, [stateMoves]
+    ld hl, stateMoves
+    ld a, [hl]
     ld [selectedMove1], a
     ret
 
 .selectMove2:
-    ld a, [stateMoves + MOVE_LENGTH]
+    ld hl, stateMoves
+    ld de, MOVE_LENGTH
+    add hl, de
+    ld a, [hl]
     ld [selectedMove2], a
     ret
 
 .selectMove3:
-    ld a, [stateMoves + 2 * MOVE_LENGTH]
+    ld hl, stateMoves
+    ld de, MOVE_LENGTH * 2
+    add hl, de
+    ld a, [hl]
     ld [selectedMove3], a
     ret
 
 .selectMove4:
-    ld a, [stateMoves + 3 * MOVE_LENGTH]
+    ld hl, stateMoves
+    ld de, MOVE_LENGTH * 3
+    add hl, de
+    ld a, [hl]
     ld [selectedMove4], a
     ret
 
