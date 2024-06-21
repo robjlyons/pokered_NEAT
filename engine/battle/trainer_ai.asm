@@ -111,24 +111,6 @@ AIEnemyTrainerChooseMoves:
 	and a
 	jp z, .useOriginalMoveSet
 	push hl
-.nextMoveChoiceModification
-	pop hl
-	ld a, [hli]
-	and a
-	jr z, .loopFindMinimumEntries
-	push hl
-	ld hl, AIMoveChoiceModificationFunctionPointers
-	dec a
-	add a
-	ld c, a
-	ld b, 0
-	add hl, bc    ; skip to pointer
-	ld a, [hli]   ; read pointer into hl
-	ld h, [hl]
-	ld l, a
-	ld de, .nextMoveChoiceModification  ; set return address
-	push de
-	jp hl         ; execute modification function
 .loopFindMinimumEntries ; all entries will be decremented sequentially until one of them is zero
 	ld hl, wBuffer  ; temp move selection array
 	ld de, wEnemyMonMoves  ; enemy moves
