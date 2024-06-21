@@ -1,14 +1,14 @@
 INCLUDE "data/variables.asm"
 
-SECTION "AIEnemyTrainerChooseMoves", ROMX
-
-; Define constants for moves and other parameters
+SECTION "Constants", ROMX
 DEF NUM_ACTIONS  EQU 4
 DEF MOVE_1       EQU 1
 DEF MOVE_2       EQU 2
 DEF MOVE_3       EQU 3
 DEF MOVE_4       EQU 4
 DEF DEFAULT_MOVE EQU MOVE_1
+
+SECTION "AIEnemyTrainerChooseMoves", ROMX
 
 ; Memory locations for PPO model parameters (these are placeholders)
 DEF PPO_PARAMS   EQU $8000
