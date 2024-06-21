@@ -34,19 +34,63 @@ CallPPOModel:
     ld hl, moveProbabilities
     ; Now hl points to the move probabilities
     ; Select the move based on probabilities (e.g., by sampling)
-    call SelectMoveBasedOnProbabilities
-
     ret
 
 ; Select a move based on the probabilities output by the PPO model
 SelectMoveBasedOnProbabilities:
+    ; This function selects a move based on the probabilities
     ; Implementation depends on how probabilities are represented
     ; Here, we assume a simple weighted random selection
-    ld hl, moveProbabilities
-    ; Add your weighted random selection logic here
-    ; This is a placeholder
-    ; (You may need to use a pseudo-random number generator and cumulative probabilities)
 
+    ; Calculate cumulative probabilities
+    ld hl, moveProbabilities
+    ld a, [hl]
+    ld [cumulativeProb1], a
+    inc hl
+    ld a, [hl]
+    add [cumulativeProb1]
+    ld [cumulativeProb2], a
+    inc hl
+    ld a, [hl]
+    add [cumulativeProb2]
+    ld [cumulativeProb3], a
+    inc hl
+    ld a, [hl]
+    add [cumulativeProb3]
+    ld [cumulativeProb4], a
+
+    ; Generate a random number
+    call Random
+    ; Assuming random number is in register A
+
+    ; Compare random number with cumulative probabilities to select a move
+    cp [cumulativeProb1]
+    jr c, .selectMove1
+    cp [cumulativeProb2]
+    jr c, .selectMove2
+    cp [cumulativeProb3]
+    jr c, .selectMove3
+    ; If not less than cumulativeProb3, select move 4
+    jr .selectMove4
+
+.selectMove1:
+    ld a, [stateMoves]
+    ld [selectedMove1], a
+    ret
+
+.selectMove2:
+    ld a, [stateMoves + MOVE_LENGTH]
+    ld [selectedMove2], a
+    ret
+
+.selectMove3:
+    ld a, [stateMoves + 2 * MOVE_LENGTH]
+    ld [selectedMove3], a
+    ret
+
+.selectMove4:
+    ld a, [stateMoves + 3 * MOVE_LENGTH]
+    ld [selectedMove4], a
     ret
 
 ; This is a placeholder function that represents the PPO model
@@ -72,95 +116,35 @@ stateMovePower:    db 0
 stateMoves:        ds NUM_MOVES * MOVE_LENGTH
 stateStatus:       db 0
 moveProbabilities: ds NUM_MOVES
+cumulativeProb1:   db 0
+cumulativeProb2:   db 0
+cumulativeProb3:   db 0
+cumulativeProb4:   db 0
+selectedMove1:     db 0
+selectedMove2:     db 0
+selectedMove3:     db 0
+selectedMove4:     db 0
 
-; creates a set of moves that may be used and returns its address in hl
-; unused slots are filled with 0, all used slots may be chosen with equal probability
-; creates a set of moves that may be used and returns its address in hl
-; unused slots are filled with 0, all used slots may be chosen with equal probability
 AIEnemyTrainerChooseMoves:
-    	ld a, $a
-    	ld hl, wBuffer ; init temporary move selection array. Only the moves with the lowest numbers are chosen in the end
-    	ld [hli], a   ; move 1
-    	ld [hli], a   ; move 2
-    	ld [hli], a   ; move 3
-    	ld [hl], a    ; move 4
-    	ld a, [wEnemyDisabledMove] ; forbid disabled move (if any)
-    	swap a
-    	and $f
-    	jr z, .noMoveDisabled
-    	ld hl, wBuffer
-    	dec a
-    	ld c, a
-    	ld b, $0
-    	add hl, bc    ; advance pointer to forbidden move
-    	ld [hl], $50  ; forbid (highly discourage) disabled move
-.noMoveDisabled
-    	; Now call the PPO model to choose moves
-    	call CallPPOModel
-    	ret
-.loopTrainerClasses
-	dec b
-	jr z, .readTrainerClassData
-.loopTrainerClassData
-	ld a, [hli]
-	and a
-	jr nz, .loopTrainerClassData
-	jr .loopTrainerClasses
-.readTrainerClassData
-	ld a, [hl]
-	and a
-	jp z, .useOriginalMoveSet
-	push hl
-.loopFindMinimumEntries ; all entries will be decremented sequentially until one of them is zero
-	ld hl, wBuffer  ; temp move selection array
-	ld de, wEnemyMonMoves  ; enemy moves
-	ld c, NUM_MOVES
-.loopDecrementEntries
-	ld a, [de]
-	inc de
-	and a
-	jr z, .loopFindMinimumEntries
-	dec [hl]
-	jr z, .minimumEntriesFound
-	inc hl
-	dec c
-	jr z, .loopFindMinimumEntries
-	jr .loopDecrementEntries
-.minimumEntriesFound
-	ld a, c
-.loopUndoPartialIteration ; undo last (partial) loop iteration
-	inc [hl]
-	dec hl
-	inc a
-	cp NUM_MOVES + 1
-	jr nz, .loopUndoPartialIteration
-	ld hl, wBuffer  ; temp move selection array
-	ld de, wEnemyMonMoves  ; enemy moves
-	ld c, NUM_MOVES
-.filterMinimalEntries ; all minimal entries now have value 1. All other slots will be disabled (move set to 0)
-	ld a, [de]
-	and a
-	jr nz, .moveExisting
-	ld [hl], a
-.moveExisting
-	ld a, [hl]
-	dec a
-	jr z, .slotWithMinimalValue
-	xor a
-	ld [hli], a     ; disable move slot
-	jr .next
-.slotWithMinimalValue
-	ld a, [de]
-	ld [hli], a     ; enable move slot
-.next
-	inc de
-	dec c
-	jr nz, .filterMinimalEntries
-	ld hl, wBuffer    ; use created temporary array as move set
-	ret
-.useOriginalMoveSet
-	ld hl, wEnemyMonMoves    ; use original move set
-	ret
+    call CallPPOModel
+    ; Assume that the probabilities from the PPO model are stored in moveProbabilities
+    ld hl, wBuffer ; init temporary move selection array
+
+    ; Use the probabilities to select moves
+    call SelectMoveBasedOnProbabilities
+    ld a, [selectedMove1]
+    ld [hli], a   ; move 1
+    call SelectMoveBasedOnProbabilities
+    ld a, [selectedMove2]
+    ld [hli], a   ; move 2
+    call SelectMoveBasedOnProbabilities
+    ld a, [selectedMove3]
+    ld [hli], a   ; move 3
+    call SelectMoveBasedOnProbabilities
+    ld a, [selectedMove4]
+    ld [hl], a    ; move 4
+
+    ret
 
 ReadMove:
 	push hl
