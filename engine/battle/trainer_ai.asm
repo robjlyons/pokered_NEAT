@@ -6,13 +6,14 @@
 InitializePolicy:
     ; Initialize policy probabilities (for simplicity, fixed values)
     ld a, 25 ; 25% chance for move 1
-    ld (wPolicyMove1), a
-    ld a, 25 ; 25% chance for move 2
-    ld (wPolicyMove2), a
-    ld a, 25 ; 25% chance for move 3
-    ld (wPolicyMove3), a
-    ld a, 25 ; 25% chance for move 4
-    ld (wPolicyMove4), a
+    ld hl, wPolicyMove1
+    ld [hl], a
+    ld hl, wPolicyMove2
+    ld [hl], a
+    ld hl, wPolicyMove3
+    ld [hl], a
+    ld hl, wPolicyMove4
+    ld [hl], a
     ret
 
 ChooseMovePPO:
@@ -33,16 +34,16 @@ ChooseMovePPO:
     jr c, Move3
     inc hl
     ; Default to Move 4
-    Move4:
+Move4:
     ld a, 3
     ret
-    Move3:
+Move3:
     ld a, 2
     ret
-    Move2:
+Move2:
     ld a, 1
     ret
-    Move1:
+Move1:
     ld a, 0
     ret
 
