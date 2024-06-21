@@ -1,8 +1,5 @@
 SECTION "bank1", ROMX
 
-INCLUDE "data/variables.asm"  ; Include the variables definition file
-INCLUDE "engine/neat.asm"     ; Include NEAT algorithm implementation
-
 INCLUDE "data/sprites/facings.asm"
 INCLUDE "engine/events/black_out.asm"
 INCLUDE "data/pokemon/mew.asm"
