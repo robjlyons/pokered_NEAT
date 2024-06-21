@@ -71,7 +71,7 @@ ApplyMoveModifications:
     ld h, a
     ld l, c
     push hl
-    call [hl]
+    jp (hl)
     pop hl
     inc hl
     dec b
