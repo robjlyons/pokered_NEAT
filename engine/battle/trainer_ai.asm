@@ -35,6 +35,9 @@ AIEnemyTrainerChooseMoves:
     ; Call PPO model to choose action
     CALL PPOChooseAction
 
+    ; Validate the chosen move
+    CALL ValidateChosenMove
+
     ; Set chosen move to wBuffer
     LD HL, wBuffer
     LD [HL], A
@@ -92,6 +95,22 @@ PPOChooseAction:
     JR NZ, .move_chosen
     LD A, DEFAULT_MOVE
 .move_chosen:
+    RET
+
+ValidateChosenMove:
+    ; Validate the move chosen by the PPO model to ensure it's in the available moves
+    LD HL, wEnemyMonMoves
+    LD B, NUM_ACTIONS
+    .check_next_move
+    LD C, [HL]
+    CP C
+    JR Z, .valid_move_found
+    INC HL
+    DEC B
+    JR NZ, .check_next_move
+    ; If we didn't find the move, default to MOVE_1
+    LD A, DEFAULT_MOVE
+.valid_move_found:
     RET
 
 GetRandomNumber:
