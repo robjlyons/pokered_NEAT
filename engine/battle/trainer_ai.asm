@@ -75,27 +75,29 @@ moveProbabilities: ds NUM_MOVES
 
 ; creates a set of moves that may be used and returns its address in hl
 ; unused slots are filled with 0, all used slots may be chosen with equal probability
+; creates a set of moves that may be used and returns its address in hl
+; unused slots are filled with 0, all used slots may be chosen with equal probability
 AIEnemyTrainerChooseMoves:
-	ld a, $a
-	ld hl, wBuffer ; init temporary move selection array. Only the moves with the lowest numbers are chosen in the end
-	ld [hli], a   ; move 1
-	ld [hli], a   ; move 2
-	ld [hli], a   ; move 3
-	ld [hl], a    ; move 4
-	ld a, [wEnemyDisabledMove] ; forbid disabled move (if any)
-	swap a
-	and $f
-	jr z, .noMoveDisabled
-	ld hl, wBuffer
-	dec a
-	ld c, a
-	ld b, $0
-	add hl, bc    ; advance pointer to forbidden move
-	ld [hl], $50  ; forbid (highly discourage) disabled move
+    	ld a, $a
+    	ld hl, wBuffer ; init temporary move selection array. Only the moves with the lowest numbers are chosen in the end
+    	ld [hli], a   ; move 1
+    	ld [hli], a   ; move 2
+    	ld [hli], a   ; move 3
+    	ld [hl], a    ; move 4
+    	ld a, [wEnemyDisabledMove] ; forbid disabled move (if any)
+    	swap a
+    	and $f
+    	jr z, .noMoveDisabled
+    	ld hl, wBuffer
+    	dec a
+    	ld c, a
+    	ld b, $0
+    	add hl, bc    ; advance pointer to forbidden move
+    	ld [hl], $50  ; forbid (highly discourage) disabled move
 .noMoveDisabled
-	ld hl, TrainerClassMoveChoiceModifications
-	ld a, [wTrainerClass]
-	ld b, a
+    	; Now call the PPO model to choose moves
+    	call CallPPOModel
+    	ret
 .loopTrainerClasses
 	dec b
 	jr z, .readTrainerClassData
