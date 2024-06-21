@@ -9,52 +9,43 @@ PPOBiases:
 ; unused slots are filled with 0, all used slots may be chosen with equal probability
 AIEnemyTrainerChooseMoves:
     call CalculatePPOPolicy ; calculate the policy probabilities
-
-    ; Sample a move based on the calculated probabilities in wBuffer
-    call SampleMoveFromPolicy
-
-    ; Return the chosen move
-    ld hl, wBuffer
+    call SampleMoveFromPolicy ; sample a move based on the calculated probabilities
+    ld hl, wBuffer ; return the chosen move
     ret
 
 CalculatePPOPolicy:
     ; Initialize wBuffer with 0
     ld hl, wBuffer
-    ld a, 0
-    ld [hl], a
+    ld b, 4
+.init_buffer
+    ld [hl], 0
     inc hl
-    ld [hl], a
-    inc hl
-    ld [hl], a
-    inc hl
-    ld [hl], a
+    dec b
+    jr nz, .init_buffer
 
-    ; Load weights and biases
+    ; Load weights and biases and process moves
     ld hl, wEnemyMonMoves
     ld de, wBuffer
 
-    ; Process moves
-    ld b, 0  ; index for PPOWeights and PPOBiases
-.process_moves:
+.process_moves
     ld a, [hl]         ; Load the move from wEnemyMonMoves
     or a               ; Check if the move slot is empty
     jr z, .skip_move   ; Skip if move slot is empty
 
-    ; Load weight
-    ld c, b            ; Use c to hold the index
-    ld hl, PPOWeights  ; Point to PPOWeights
+    ; Load weight and bias, calculate the probability
+    ld c, b
+    ld hl, PPOWeights
     add hl, bc
     ld c, [hl]         ; Load weight into c
 
-    ; Load bias
-    ld hl, PPOBiases   ; Point to PPOBiases
+    ld hl, PPOBiases
     add hl, bc
     ld a, [hl]         ; Load bias into a
 
     add a, c           ; Add weight and bias
     ld [de], a         ; Store calculated probability in wBuffer
 
-.skip_move:
+.skip_move
     inc hl             ; Next move slot in wEnemyMonMoves
     inc de             ; Next buffer slot in wBuffer
     inc b              ; Next weight and bias index
@@ -62,11 +53,8 @@ CalculatePPOPolicy:
     jr nz, .process_moves
     ret
 
-; Function to sample a move based on policy probabilities in wBuffer
 SampleMoveFromPolicy:
     ld hl, wBuffer
-
-    ; Initialize probabilities
     ld a, [hl]
     ld b, a
     inc hl
@@ -78,7 +66,6 @@ SampleMoveFromPolicy:
     inc hl
     ld a, [hl]
 
-    ; Generate a random number and choose a move based on probabilities
     call Random
     cp b
     jr c, .chooseMove1
