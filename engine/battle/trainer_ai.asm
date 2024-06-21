@@ -108,7 +108,8 @@ GetRandomNumber:
 .SkipXOR:
     RR E
     RL D
-    DJNZ .RandomLoop
+    DEC B
+    JR NZ, .RandomLoop
     LD A, E
     LD [HL], A
     RET
