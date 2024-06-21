@@ -19,9 +19,7 @@ PrepareState:
 
     ; Load status conditions
     ld a, [wBattleMonStatus]
-    ld [stateEnemyStatus], a
-    ld a, [wPlayerMonStatus]
-    ld [statePlayerStatus], a
+    ld [wPlayerMonStatus], a
 
     ret
 
