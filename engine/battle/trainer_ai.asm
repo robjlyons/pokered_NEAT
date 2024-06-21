@@ -65,27 +65,13 @@ PPOModelFunction:
     ; Placeholder: Just return uniform probabilities
     ld hl, moveProbabilities
     ld a, 25
-    ld (hl), a
+    ld [hl], a
     inc hl
-    ld (hl), a
+    ld [hl], a
     inc hl
-    ld (hl), a
+    ld [hl], a
     inc hl
-    ld (hl), a
-    ret
-
-; This is a placeholder function that represents the PPO model
-; In a real implementation, this would call the PPO model and write the probabilities to moveProbabilities
-PPOModelFunction:
-    ; Placeholder: Just return uniform probabilities
-    ld hl, moveProbabilities
-    ld (hl), 25
-    inc hl
-    ld (hl), 25
-    inc hl
-    ld (hl), 25
-    inc hl
-    ld (hl), 25
+    ld [hl], a
     ret
 
 ; Define storage for state representation and move probabilities
