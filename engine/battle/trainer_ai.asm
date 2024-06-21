@@ -1,3 +1,5 @@
+INCLUDE "data/variables.asm"
+
 SECTION "AIEnemyTrainerChooseMoves", ROMX
 
 ; Define constants for moves and other parameters
@@ -108,10 +110,6 @@ GetRandomNumber:
     LD A, E
     LD [HL], A
     RET
-
-SECTION "ValidMovesData", HRAM
-wValidMoves: DS NUM_ACTIONS
-
 
 ; discourages moves that cause no damage but only a status ailment if player's mon already has one
 AIMoveChoiceModification1:
