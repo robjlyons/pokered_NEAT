@@ -45,6 +45,10 @@ AIEnemyTrainerChooseMoves:
     CP 0
     JR NZ, .has_moves
     LD A, DEFAULT_MOVE
+.noMoveDisabled
+	ld hl, TrainerClassMoveChoiceModifications
+	ld a, [wTrainerClass]
+	ld b, a
 .has_moves:
     LD HL, wBuffer
     LD [HL], A
