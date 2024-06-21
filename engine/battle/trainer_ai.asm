@@ -29,15 +29,15 @@ AIEnemyTrainerChooseMoves:
     LD HL, wBuffer
     LD [HL], A
     ld a, [wEnemyDisabledMove] ; forbid disabled move (if any)
-	swap a
-	and $f
-	jr z, .noMoveDisabled
-	ld hl, wBuffer
-	dec a
-	ld c, a
-	ld b, $0
-	add hl, bc    ; advance pointer to forbidden move
-	ld [hl], $50  ; forbid (highly discourage) disabled move
+    swap a
+    and $f
+    jr z, .noMoveDisabled
+    ld hl, wBuffer
+    dec a
+    ld c, a
+    ld b, $0
+    add hl, bc    ; advance pointer to forbidden move
+    ld [hl], $50  ; forbid (highly discourage) disabled move
 
     ; Handle less than 4 moves case
     LD HL, wEnemyMonMoves
