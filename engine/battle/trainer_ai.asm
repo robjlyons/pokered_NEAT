@@ -85,7 +85,8 @@ PPOChooseAction:
     AND $03  ; Restrict to 4 options (0-3)
     LD B, A
     LD HL, wEnemyMonMoves
-    LD A, [HL + B]
+    ADD HL, BC  ; Calculate effective address HL + B
+    LD A, [HL]
     CP 0
     JR NZ, .move_chosen
     LD A, DEFAULT_MOVE
