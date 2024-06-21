@@ -1,48 +1,66 @@
-; Define policy network weights and biases
-PPOWeights: ; Placeholder weights for simplicity
-    db 1, 1, 1, 1 ; These would normally be trained values
-PPOBiases:
-    db 0, 0, 0, 0 ; These would normally be trained values
+AIEnemyTrainerChooseMoves:
+    call CalculatePPOPolicy ; calculate the policy probabilities
 
-; Function to calculate policy probabilities
+    ; Sample a move based on the calculated probabilities in wBuffer
+    call SampleMoveFromPolicy
+
+    ; Return the chosen move
+    ld hl, wBuffer
+    ret
+
 CalculatePPOPolicy:
     ; Load weights and biases
     ld hl, PPOWeights
     ld de, PPOBiases
+    
+    ; Load move probabilities into wBuffer, but only for available moves
+    ld hl, wEnemyMonMoves
+    ld bc, wBuffer
     ld a, [hl]
+    or a
+    jr z, .skipMove1
+    ld a, PPOWeights
     ld c, a
-    ld a, [de]
+    ld a, PPOBiases
     add a, c
-    ld hl, wBuffer
-    ld [hl], a
+    ld [bc], a
+.skipMove1
     inc hl
-    inc de
+    inc bc
 
-    ; Repeat for all moves
-    ld hl, PPOWeights + 1
     ld a, [hl]
+    or a
+    jr z, .skipMove2
+    ld a, PPOWeights + 1
     ld c, a
-    ld a, [de]
+    ld a, PPOBiases + 1
     add a, c
-    ld [hl], a
+    ld [bc], a
+.skipMove2
     inc hl
-    inc de
+    inc bc
 
-    ld hl, PPOWeights + 2
     ld a, [hl]
+    or a
+    jr z, .skipMove3
+    ld a, PPOWeights + 2
     ld c, a
-    ld a, [de]
+    ld a, PPOBiases + 2
     add a, c
-    ld [hl], a
+    ld [bc], a
+.skipMove3
     inc hl
-    inc de
+    inc bc
 
-    ld hl, PPOWeights + 3
     ld a, [hl]
+    or a
+    jr z, .skipMove4
+    ld a, PPOWeights + 3
     ld c, a
-    ld a, [de]
+    ld a, PPOBiases + 3
     add a, c
-    ld [hl], a
+    ld [bc], a
+.skipMove4
 
     ret
 
@@ -88,15 +106,6 @@ SampleMoveFromPolicy:
     ld hl, wEnemyMonMoves + 3
     ret
 
-AIEnemyTrainerChooseMoves:
-    call CalculatePPOPolicy ; calculate the policy probabilities
-
-    ; Sample a move based on the calculated probabilities in wBuffer
-    call SampleMoveFromPolicy
-
-    ; Return the chosen move
-    ld hl, wBuffer
-    ret
 
 AIMoveChoiceModificationFunctionPointers:
     dw AIMoveChoiceModification1
