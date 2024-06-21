@@ -13,33 +13,22 @@ CalculatePPOPolicy:
     ; Load move probabilities into wBuffer
     ld hl, wBuffer
     ld a, [PPOWeights]
-    add [PPOBiases]
+    add a, [PPOBiases]
     ld [hli], a
     
     ; Repeat for all moves
     ld a, [PPOWeights + 1]
-    add [PPOBiases + 1]
+    add a, [PPOBiases + 1]
     ld [hli], a
     
     ld a, [PPOWeights + 2]
-    add [PPOBiases + 2]
+    add a, [PPOBiases + 2]
     ld [hli], a
     
     ld a, [PPOWeights + 3]
-    add [PPOBiases + 3]
+    add a, [PPOBiases + 3]
     ld [hli], a
     
-    ret
-
-AIEnemyTrainerChooseMoves:
-    call CalculatePPOPolicy ; calculate the policy probabilities
-
-    ; Sample a move based on the calculated probabilities in wBuffer
-    ld hl, wBuffer
-    call SampleMoveFromPolicy
-
-    ; Return the chosen move
-    ld hl, wBuffer
     ret
 
 ; Function to sample a move based on policy probabilities in wBuffer
@@ -76,6 +65,18 @@ SampleMoveFromPolicy:
 .chooseMove4:
     ld hl, wEnemyMonMoves + 3
     ret
+
+AIEnemyTrainerChooseMoves:
+    call CalculatePPOPolicy ; calculate the policy probabilities
+
+    ; Sample a move based on the calculated probabilities in wBuffer
+    ld hl, wBuffer
+    call SampleMoveFromPolicy
+
+    ; Return the chosen move
+    ld hl, wBuffer
+    ret
+
 AIMoveChoiceModificationFunctionPointers:
 	dw AIMoveChoiceModification1
 	dw AIMoveChoiceModification2
