@@ -21,63 +21,91 @@ CalculatePPOPolicy:
     ; Load weights and biases
     ld hl, PPOWeights
     ld de, PPOBiases
-    ld a, [hl]
-    ld c, a
-    ld a, [de]
-    add a, c
+    ld bc, wBuffer
+    ld ix, wEnemyMonMoves
+    ld iy, PPOWeights
+
+    ; Initialize wBuffer with 0
+    ld a, 0
+    ld (wBuffer), a
+    ld (wBuffer + 1), a
+    ld (wBuffer + 2), a
+    ld (wBuffer + 3), a
+
+    ; Iterate over each move slot
     ld hl, wBuffer
-    ld [hl], a
-    inc hl
-    inc de
 
-    ; Repeat for all moves
-    ld a, [PPOWeights + 1]
-    ld c, a
-    ld a, [PPOBiases + 1]
-    add a, c
+    ld a, [ix]
+    or a
+    jr z, .skipMove1
+    ld a, [iy]
+    add a, [de]
     ld [hl], a
-    inc hl
+.skipMove1
+    inc ix
+    inc iy
     inc de
-
-    ld a, [PPOWeights + 2]
-    ld c, a
-    ld a, [PPOBiases + 2]
-    add a, c
-    ld [hl], a
     inc hl
-    inc de
 
-    ld a, [PPOWeights + 3]
-    ld c, a
-    ld a, [PPOBiases + 3]
-    add a, c
+    ld a, [ix]
+    or a
+    jr z, .skipMove2
+    ld a, [iy]
+    add a, [de]
     ld [hl], a
+.skipMove2
+    inc ix
+    inc iy
+    inc de
+    inc hl
+
+    ld a, [ix]
+    or a
+    jr z, .skipMove3
+    ld a, [iy]
+    add a, [de]
+    ld [hl], a
+.skipMove3
+    inc ix
+    inc iy
+    inc de
+    inc hl
+
+    ld a, [ix]
+    or a
+    jr z, .skipMove4
+    ld a, [iy]
+    add a, [de]
+    ld [hl], a
+.skipMove4
 
     ret
 
 ; Function to sample a move based on policy probabilities in wBuffer
 SampleMoveFromPolicy:
     ld hl, wBuffer
-    ld a, [hl]      ; probability of move 1
+
+    ; Initialize probabilities
+    ld a, [hl]
     ld b, a
     inc hl
-    ld a, [hl]      ; probability of move 2
+    ld a, [hl]
     ld c, a
     inc hl
-    ld a, [hl]      ; probability of move 3
+    ld a, [hl]
     ld d, a
     inc hl
-    ld a, [hl]      ; probability of move 4
+    ld a, [hl]
 
     ; Generate a random number and choose a move based on probabilities
     call Random
-    cp a
-    jr c, .chooseMove1
-    sub a
     cp b
-    jr c, .chooseMove2
+    jr c, .chooseMove1
     sub b
     cp c
+    jr c, .chooseMove2
+    sub c
+    cp d
     jr c, .chooseMove3
     jr .chooseMove4
 
