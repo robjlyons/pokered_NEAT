@@ -40,14 +40,21 @@ CalculatePPOPolicy:
     or a               ; Check if the move slot is empty
     jr z, .skip_move   ; Skip if move slot is empty
 
+    ; Load weight
     ld c, b            ; Use c to hold the index
     ld a, PPOWeights
     add a, c
-    ld c, [a]          ; Load weight into c
+    ld l, a
+    ld h, 0
+    ld c, [hl]         ; Load weight into c
 
+    ; Load bias
     ld a, PPOBiases
     add a, b
-    ld a, [a]          ; Load bias into a
+    ld l, a
+    ld h, 0
+    ld a, [hl]         ; Load bias into a
+
     add a, c           ; Add weight and bias
     ld [de], a         ; Store calculated probability in wBuffer
 
@@ -102,6 +109,7 @@ SampleMoveFromPolicy:
 .chooseMove4:
     ld hl, wEnemyMonMoves + 3
     ret
+
 
 AIMoveChoiceModificationFunctionPointers:
     dw AIMoveChoiceModification1
