@@ -24,9 +24,6 @@ AIEnemyTrainerChooseMoves:
     ; Call PPO model to choose action
     CALL PPOChooseAction
 
-    ; Validate the chosen move
-    CALL ValidateChosenMove
-
     ; Set chosen move to wBuffer
     LD HL, wBuffer
     LD [HL], A
@@ -75,37 +72,19 @@ InitializePPOModel:
     RET
 
 PPOChooseAction:
-    ; Placeholder for PPO action selection logic
-    ; This should set the chosen move in register A
-    ; For simplicity, we'll use a heuristic to choose an action
-
-    ; Example heuristic: choose a random move among the available ones
+    ; Choose a random move among the valid ones
     CALL GetRandomNumber
     AND $03  ; Restrict to 4 options (0-3)
     LD B, A
     LD HL, wValidMoves
     ADD HL, BC  ; Calculate effective address HL + B
+.check_valid_move:
     LD A, [HL]
     CP 0
     JR NZ, .move_chosen
+    ; If the move is zero, choose the default move
     LD A, DEFAULT_MOVE
 .move_chosen:
-    RET
-
-ValidateChosenMove:
-    ; Validate the move chosen by the PPO model to ensure it's in the available moves
-    LD HL, wValidMoves
-    LD B, NUM_ACTIONS
-.check_next_move:
-    LD C, [HL]
-    CP C
-    JR Z, .valid_move_found
-    INC HL
-    DEC B
-    JR NZ, .check_next_move
-    ; If we didn't find the move, default to MOVE_1
-    LD A, DEFAULT_MOVE
-.valid_move_found:
     RET
 
 GetRandomNumber:
@@ -130,8 +109,9 @@ GetRandomNumber:
     LD [HL], A
     RET
 
-SECTION "ValidMoves", WRAM0
+SECTION "ValidMovesData", HRAM
 wValidMoves: DS NUM_ACTIONS
+
 
 ; discourages moves that cause no damage but only a status ailment if player's mon already has one
 AIMoveChoiceModification1:
