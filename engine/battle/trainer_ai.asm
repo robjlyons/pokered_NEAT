@@ -1,3 +1,12 @@
+; Define policy network weights and biases
+PPOWeights:
+    db 1, 1, 1, 1 ; Placeholder weights for simplicity
+
+PPOBiases:
+    db 0, 0, 0, 0 ; Placeholder biases for simplicity
+
+; creates a set of moves that may be used and returns its address in hl
+; unused slots are filled with 0, all used slots may be chosen with equal probability
 AIEnemyTrainerChooseMoves:
     call CalculatePPOPolicy ; calculate the policy probabilities
 
@@ -12,55 +21,37 @@ CalculatePPOPolicy:
     ; Load weights and biases
     ld hl, PPOWeights
     ld de, PPOBiases
-    
-    ; Load move probabilities into wBuffer, but only for available moves
-    ld hl, wEnemyMonMoves
-    ld bc, wBuffer
     ld a, [hl]
-    or a
-    jr z, .skipMove1
-    ld a, PPOWeights
     ld c, a
-    ld a, PPOBiases
+    ld a, [de]
     add a, c
-    ld [bc], a
-.skipMove1
+    ld hl, wBuffer
+    ld [hl], a
     inc hl
-    inc bc
+    inc de
 
-    ld a, [hl]
-    or a
-    jr z, .skipMove2
-    ld a, PPOWeights + 1
+    ; Repeat for all moves
+    ld a, [PPOWeights + 1]
     ld c, a
-    ld a, PPOBiases + 1
+    ld a, [PPOBiases + 1]
     add a, c
-    ld [bc], a
-.skipMove2
+    ld [hl], a
     inc hl
-    inc bc
+    inc de
 
-    ld a, [hl]
-    or a
-    jr z, .skipMove3
-    ld a, PPOWeights + 2
+    ld a, [PPOWeights + 2]
     ld c, a
-    ld a, PPOBiases + 2
+    ld a, [PPOBiases + 2]
     add a, c
-    ld [bc], a
-.skipMove3
+    ld [hl], a
     inc hl
-    inc bc
+    inc de
 
-    ld a, [hl]
-    or a
-    jr z, .skipMove4
-    ld a, PPOWeights + 3
+    ld a, [PPOWeights + 3]
     ld c, a
-    ld a, PPOBiases + 3
+    ld a, [PPOBiases + 3]
     add a, c
-    ld [bc], a
-.skipMove4
+    ld [hl], a
 
     ret
 
@@ -105,7 +96,6 @@ SampleMoveFromPolicy:
 .chooseMove4:
     ld hl, wEnemyMonMoves + 3
     ret
-
 
 AIMoveChoiceModificationFunctionPointers:
     dw AIMoveChoiceModification1
