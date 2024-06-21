@@ -67,7 +67,8 @@ ApplyMoveModifications:
     ld d, [hl] ; Load upper byte of the address
     inc hl
     push hl    ; Save the current pointer
-    ld hl, de  ; Jump to the function address
+    ld l, e    ; Set HL to the address of the function
+    ld h, d
     call ExecuteModification
     pop hl     ; Restore the pointer
     dec b
