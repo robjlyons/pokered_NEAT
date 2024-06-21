@@ -18,10 +18,6 @@ AIEnemyTrainerChooseMoves:
     ret
 
 CalculatePPOPolicy:
-    ; Load weights and biases
-    ld hl, PPOWeights
-    ld de, PPOBiases
-    
     ; Initialize wBuffer with 0
     ld hl, wBuffer
     ld a, 0
@@ -33,64 +29,29 @@ CalculatePPOPolicy:
     inc hl
     ld [hl], a
 
-    ; Iterate over each move slot
+    ; Load weights and biases
     ld hl, wEnemyMonMoves
-    ld b, 0  ; index for PPOWeights and PPOBiases
     ld de, wBuffer
+    ld bc, 0
 
-    ; Process move 1
-    ld a, [hl]
-    or a
-    jr z, .skipMove1
-    ld a, [PPOWeights]
-    ld c, a
-    ld a, [PPOBiases]
-    add a, c
-    ld [de], a
-.skipMove1
-    inc hl
-    inc de
-    inc b
+    ; Process moves
+    .process_moves:
+        ld a, [hl]         ; Load the move from wEnemyMonMoves
+        or a               ; Check if the move slot is empty
+        jr z, .skip_move   ; Skip if move slot is empty
 
-    ; Process move 2
-    ld a, [hl]
-    or a
-    jr z, .skipMove2
-    ld a, [PPOWeights + 1]
-    ld c, a
-    ld a, [PPOBiases + 1]
-    add a, c
-    ld [de], a
-.skipMove2
-    inc hl
-    inc de
-    inc b
+        ld a, [PPOWeights + bc]
+        ld c, a
+        ld a, [PPOBiases + bc]
+        add a, c
+        ld [de], a         ; Store calculated probability in wBuffer
 
-    ; Process move 3
-    ld a, [hl]
-    or a
-    jr z, .skipMove3
-    ld a, [PPOWeights + 2]
-    ld c, a
-    ld a, [PPOBiases + 2]
-    add a, c
-    ld [de], a
-.skipMove3
-    inc hl
-    inc de
-    inc b
-
-    ; Process move 4
-    ld a, [hl]
-    or a
-    jr z, .skipMove4
-    ld a, [PPOWeights + 3]
-    ld c, a
-    ld a, [PPOBiases + 3]
-    add a, c
-    ld [de], a
-.skipMove4
-
+    .skip_move:
+        inc hl             ; Next move slot in wEnemyMonMoves
+        inc de             ; Next buffer slot in wBuffer
+        inc bc             ; Next weight and bias
+        cp 4               ; Check if all 4 moves are processed
+        jr nz, .process_moves
     ret
 
 ; Function to sample a move based on policy probabilities in wBuffer
