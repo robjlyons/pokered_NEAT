@@ -10,13 +10,15 @@ CalculatePPOPolicy:
     ld hl, PPOWeights
     
     ; Load move probabilities into wBuffer
-    ld de, PPOBiases
     ld a, [hl]
-    add a, [de]
+    ld c, a
+    ld a, [de]
+    add a, c
     ld hl, wBuffer
     ld [hl], a
     inc hl
     inc de
+    inc hl
     
     ; Repeat for all moves
     ld a, [hl - 2]  ; Note: Adjusted to ensure correct indexing
