@@ -55,23 +55,6 @@ AIEnemyTrainerChooseMoves:
 
     RET
 
-LoadValidMoves:
-    ; Load and filter valid moves from wEnemyMonMoves
-    LD HL, wEnemyMonMoves
-    LD DE, wValidMoves
-    LD B, NUM_ACTIONS
-.load_loop:
-    LD A, [HL]
-    CP 0
-    JR Z, .skip_move
-    LD [DE], A
-    INC DE
-.skip_move:
-    INC HL
-    DEC B
-    JR NZ, .load_loop
-    RET
-
 InitializePPOModel:
     ; Initialize PPO model parameters if needed
     ; Placeholder: Assuming we set some initial values
@@ -91,7 +74,7 @@ PPOChooseAction:
     CALL GetRandomNumber
     AND $03  ; Restrict to 4 options (0-3)
     LD B, A
-    LD HL, wValidMoves
+    LD HL, wEnemyMonMoves
     ADD HL, BC  ; Calculate effective address HL + B
 .check_valid_move:
     LD A, [HL]
