@@ -1,14 +1,18 @@
-; Define constants for memory locations and weights
-wBuffer:                   ds 4       ; Buffer for selected moves
-wEnemyDisabledMove:        ds 1       ; Disabled move for the enemy
-wTrainerClass:             ds 1       ; Trainer class
-TrainerClassMoveChoiceModifications: ds 20 ; Placeholder for trainer modifications
-NUM_MOVES:                 equ 4      ; Number of moves
+; Assuming NUM_MOVES is defined in includes.asm or another included file
 
-; Heuristic weights (example values)
+; Define constants for memory locations and weights if not already defined
+; These should be defined only if not already defined
+IFNDEF MOVE_DAMAGE_WEIGHT
 MOVE_DAMAGE_WEIGHT:        equ 5
+ENDIF
+
+IFNDEF MOVE_EFFECTIVENESS_WEIGHT
 MOVE_EFFECTIVENESS_WEIGHT: equ 3
+ENDIF
+
+IFNDEF MOVE_STATUS_WEIGHT
 MOVE_STATUS_WEIGHT:        equ 2
+ENDIF
 
 ; Function to choose moves based on state
 AIEnemyTrainerChooseMoves:
