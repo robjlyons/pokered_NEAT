@@ -82,7 +82,7 @@ PPOChooseAction:
 .choose_random:
     ; Use some RNG function to choose between available moves
     CALL GetRandomNumber
-    AND 0x03  ; Restrict to 4 options (0-3)
+    AND $03  ; Restrict to 4 options (0-3)
     LD B, A
     LD HL, wEnemyMonMoves
     LD A, [HL + B]
