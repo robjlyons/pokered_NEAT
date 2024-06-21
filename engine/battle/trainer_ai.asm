@@ -12,6 +12,7 @@ DEF DEFAULT_MOVE EQU MOVE_1
 DEF PPO_PARAMS   EQU $8000
 DEF PPO_STATE    EQU $8100
 DEF PPO_ACTIONS  EQU $8200
+DEF wRNGSeed     EQU $C000  ; Define the RNG seed location (example address)
 
 AIEnemyTrainerChooseMoves:
     ; Initialize PPO model if needed
