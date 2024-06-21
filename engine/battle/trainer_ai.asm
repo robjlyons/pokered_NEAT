@@ -1,22 +1,26 @@
 ; Prepare the state representation
 PrepareState:
-    ; Load current HP of both Pokémon
+    ; Load current HP of the enemy Pokémon
     ld a, [wEnemyMonHP + 1]
     ld [stateEnemyHP], a
 
-    ; Load types of both Pokémon
+    ; Load type effectiveness, move type, and move power
     ld a, [wTypeEffectiveness]
-    ld [wEnemyMoveType], a
-    ld a, [wEnemyMoveEffect]
-    ld [wEnemyMovePower], a
+    ld [stateTypeEffectiveness], a
+    ld a, [wEnemyMoveType]
+    ld [stateMoveType], a
+    ld a, [wEnemyMovePower]
+    ld [stateMovePower], a
 
     ; Load available moves and their properties
     ld hl, wEnemyMonMoves
+    ld de, stateMoves
     ld bc, NUM_MOVES * MOVE_LENGTH
     call CopyData
 
     ; Load status conditions
     ld a, [wBattleMonStatus]
+    ld [stateStatus], a
 
     ret
 
@@ -62,16 +66,11 @@ PPOModelFunction:
 
 ; Define storage for state representation and move probabilities
 stateEnemyHP:      db 0
-statePlayerHP:     db 0
-stateEnemyType1:   db 0
-stateEnemyType2:   db 0
-statePlayerType1:  db 0
-statePlayerType2:  db 0
+stateTypeEffectiveness: db 0
+stateMoveType:     db 0
+stateMovePower:    db 0
 stateMoves:        ds NUM_MOVES * MOVE_LENGTH
-stateEnemyStatus:  db 0
-statePlayerStatus: db 0
-stateFieldEffects: db 0
-
+stateStatus:       db 0
 moveProbabilities: ds NUM_MOVES
 
 ; creates a set of moves that may be used and returns its address in hl
