@@ -21,11 +21,9 @@ CalculatePPOPolicy:
     ; Load weights and biases
     ld hl, PPOWeights
     ld de, PPOBiases
-    ld bc, wBuffer
-    ld ix, wEnemyMonMoves
-    ld iy, PPOWeights
-
+    
     ; Initialize wBuffer with 0
+    ld bc, wBuffer
     ld a, 0
     ld (wBuffer), a
     ld (wBuffer + 1), a
@@ -33,50 +31,61 @@ CalculatePPOPolicy:
     ld (wBuffer + 3), a
 
     ; Iterate over each move slot
-    ld hl, wBuffer
+    ld hl, wEnemyMonMoves
+    ld b, 0  ; index for PPOWeights and PPOBiases
+    ld de, wBuffer
 
-    ld a, [ix]
+    ; Process move 1
+    ld a, [hl]
     or a
     jr z, .skipMove1
-    ld a, [iy]
-    add a, [de]
-    ld [hl], a
+    ld a, [PPOWeights]
+    ld c, a
+    ld a, [PPOBiases]
+    add a, c
+    ld [de], a
 .skipMove1
-    inc ix
-    inc iy
-    inc de
     inc hl
+    inc de
+    inc b
 
-    ld a, [ix]
+    ; Process move 2
+    ld a, [hl]
     or a
     jr z, .skipMove2
-    ld a, [iy]
-    add a, [de]
-    ld [hl], a
+    ld a, [PPOWeights + 1]
+    ld c, a
+    ld a, [PPOBiases + 1]
+    add a, c
+    ld [de], a
 .skipMove2
-    inc ix
-    inc iy
-    inc de
     inc hl
+    inc de
+    inc b
 
-    ld a, [ix]
+    ; Process move 3
+    ld a, [hl]
     or a
     jr z, .skipMove3
-    ld a, [iy]
-    add a, [de]
-    ld [hl], a
+    ld a, [PPOWeights + 2]
+    ld c, a
+    ld a, [PPOBiases + 2]
+    add a, c
+    ld [de], a
 .skipMove3
-    inc ix
-    inc iy
-    inc de
     inc hl
+    inc de
+    inc b
 
-    ld a, [ix]
+    ; Process move 4
+    ld a, [hl]
     or a
     jr z, .skipMove4
-    ld a, [iy]
-    add a, [de]
-    ld [hl], a
+    ld a, [PPOWeights + 3]
+    ld c, a
+    ld a, [PPOBiases + 3]
+    add a, c
+    ld [de], a
 .skipMove4
 
     ret
