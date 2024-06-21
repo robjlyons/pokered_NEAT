@@ -170,13 +170,29 @@ UpdatePolicy:
     ld a, [reward]
     ld c, a
     ld a, [learningRate]
-    mul c  ; reward * learningRate
+    call Multiply ; result in de
+    ld a, d
     add [hl + b]
     ld [hl + b], a
 
     ; Normalize probabilities
     call NormalizeProbabilities
 
+    ret
+
+; Multiply values in a and c, store result in de
+Multiply:
+    xor d
+    xor e
+    ld b, 8
+.mul_loop:
+    sla c
+    rl e
+    rl d
+    jr nc, .skip_add
+    add hl, de
+.skip_add:
+    djnz .mul_loop
     ret
 
 ; Normalize probabilities to ensure they sum to 100
@@ -200,21 +216,34 @@ NormalizeProbabilities:
     ; Normalize each probability
     ld hl, stateMoveProbabilities
     ld a, [hl]
-    div e  ; a = a / e
+    call DivideByE
     ld [hl], a
     inc hl
     ld a, [hl]
-    div e
+    call DivideByE
     ld [hl], a
     inc hl
     ld a, [hl]
-    div e
+    call DivideByE
     ld [hl], a
     inc hl
     ld a, [hl]
-    div e
+    call DivideByE
     ld [hl], a
 
+    ret
+
+; Divide value in a by value in e, store result in a
+DivideByE:
+    ld b, 0
+.div_loop:
+    sub e
+    jr c, .done
+    inc b
+    jr .div_loop
+.done:
+    add e
+    ld a, b
     ret
 
 ; Define storage for state representation and move probabilities
