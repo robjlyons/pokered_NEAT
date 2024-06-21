@@ -1,26 +1,62 @@
-AIEnemyTrainerChooseMoves:
-    ; Collect battle context data
-    ld a, [wEnemyMonHP]
-    ld [wNEAT_EnemyHP], a
+; creates a set of moves that may be used and returns its address in hl
+; unused slots are filled with 0, all used slots may be chosen with equal probability
 
-    ld a, [wBattleMonHP]
-    ld [wNEAT_BattleMonHP], a
+; Simple PPO Policy for choosing moves
 
-    ld a, [wEnemyMonStatus]
-    ld [wNEAT_EnemyMonStatus], a
-
-    ld a, [wBattleMonStatus]
-    ld [wNEAT_BattleMonStatus], a
-
-    ; Call NEAT algorithm to choose move
-    call NEATChooseMove
-
-    ; Set the selected move in the buffer
-    ld a, [wNEAT_SelectedMove]
-    ld hl, wBuffer
-    ld [hl], a
+InitializePolicy:
+    ; Initialize policy probabilities (for simplicity, fixed values)
+    ld a, 25 ; 25% chance for move 1
+    ld (wPolicyMove1), a
+    ld a, 25 ; 25% chance for move 2
+    ld (wPolicyMove2), a
+    ld a, 25 ; 25% chance for move 3
+    ld (wPolicyMove3), a
+    ld a, 25 ; 25% chance for move 4
+    ld (wPolicyMove4), a
     ret
 
+ChooseMovePPO:
+    ; Generate a random number between 0 and 99
+    call Random
+    ld b, a
+    ld hl, wPolicyMove1
+    ld a, [hl]
+    cp b
+    jr c, Move1
+    inc hl
+    ld a, [hl]
+    cp b
+    jr c, Move2
+    inc hl
+    ld a, [hl]
+    cp b
+    jr c, Move3
+    inc hl
+    ; Default to Move 4
+    Move4:
+    ld a, 3
+    ret
+    Move3:
+    ld a, 2
+    ret
+    Move2:
+    ld a, 1
+    ret
+    Move1:
+    ld a, 0
+    ret
+
+AIEnemyTrainerChooseMoves:
+    call ChooseMovePPO
+    ret
+
+; Data section for policy probabilities
+wPolicyMove1: db 25
+wPolicyMove2: db 25
+wPolicyMove3: db 25
+wPolicyMove4: db 25
+
+; Original AI logic
 INCLUDE "data/trainers/move_choices.asm"
 INCLUDE "data/trainers/pic_pointers_money.asm"
 INCLUDE "data/trainers/names.asm"
