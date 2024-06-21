@@ -70,14 +70,27 @@ SelectMoveBasedOnProbabilities:
     ; Assuming random number is in register A
 
     ; Compare random number with cumulative probabilities to select a move
-    cp [cumulativeProb1]
+    ld hl, cumulativeProb1
+    ld b, [hl]
+    cp b
     jr c, .selectMove1
-    cp [cumulativeProb2]
+    ld hl, cumulativeProb2
+    ld b, [hl]
+    cp b
     jr c, .selectMove2
-    cp [cumulativeProb3]
+    ld hl, cumulativeProb3
+    ld b, [hl]
+    cp b
     jr c, .selectMove3
     ; If not less than cumulativeProb3, select move 4
-    jr .selectMove4
+
+.selectMove4:
+    ld hl, stateMoves
+    ld de, MOVE_LENGTH * 3
+    add hl, de
+    ld a, [hl]
+    ld [selectedMove4], a
+    ret
 
 .selectMove1:
     ld hl, stateMoves
@@ -99,14 +112,6 @@ SelectMoveBasedOnProbabilities:
     add hl, de
     ld a, [hl]
     ld [selectedMove3], a
-    ret
-
-.selectMove4:
-    ld hl, stateMoves
-    ld de, MOVE_LENGTH * 3
-    add hl, de
-    ld a, [hl]
-    ld [selectedMove4], a
     ret
 
 ; This is a placeholder function that represents the PPO model
