@@ -1,3 +1,113 @@
+; creates a set of moves that may be used and returns its address in hl
+; unused slots are filled with 0, all used slots may be chosen with equal probability
+AIEnemyTrainerChooseMoves:
+    ; Initialize temporary move selection array with $a
+    ld a, $a
+    ld hl, wBuffer
+    ld [hli], a   ; move 1
+    ld [hli], a   ; move 2
+    ld [hli], a   ; move 3
+    ld [hl], a    ; move 4
+
+    ; Forbid disabled move if any
+    ld a, [wEnemyDisabledMove]
+    swap a
+    and $f
+    jr z, .noMoveDisabled
+    ld hl, wBuffer
+    dec a
+    ld c, a
+    ld b, $0
+    add hl, bc
+    ld [hl], $50  ; forbid (highly discourage) disabled move
+.noMoveDisabled
+
+    ; Read trainer class move choice modifications
+    ld hl, TrainerClassMoveChoiceModifications
+    ld a, [wTrainerClass]
+    ld b, a
+.loopTrainerClasses
+    dec b
+    jr z, .readTrainerClassData
+.loopTrainerClassData
+    ld a, [hli]
+    and a
+    jr nz, .loopTrainerClassData
+    jr .loopTrainerClasses
+.readTrainerClassData
+    ld a, [hl]
+    and a
+    jp z, .useOriginalMoveSet
+    push hl
+.nextMoveChoiceModification
+    pop hl
+    ld a, [hli]
+    and a
+    jr z, .loopFindMinimumEntries
+    push hl
+    ld hl, AIMoveChoiceModificationFunctionPointers
+    dec a
+    add a
+    ld c, a
+    ld b, 0
+    add hl, bc
+    ld a, [hli]
+    ld h, [hl]
+    ld l, a
+    ld de, .nextMoveChoiceModification
+    push de
+    jp hl
+.loopFindMinimumEntries
+    ld hl, wBuffer
+    ld de, wEnemyMonMoves
+    ld c, NUM_MOVES
+.loopDecrementEntries
+    ld a, [de]
+    inc de
+    and a
+    jr z, .loopFindMinimumEntries
+    dec [hl]
+    jr z, .minimumEntriesFound
+    inc hl
+    dec c
+    jr z, .loopFindMinimumEntries
+    jr .loopDecrementEntries
+.minimumEntriesFound
+    ld a, c
+.loopUndoPartialIteration
+    inc [hl]
+    dec hl
+    inc a
+    cp NUM_MOVES + 1
+    jr nz, .loopUndoPartialIteration
+    ld hl, wBuffer
+    ld de, wEnemyMonMoves
+    ld c, NUM_MOVES
+.filterMinimalEntries
+    ld a, [de]
+    and a
+    jr nz, .moveExisting
+    ld [hl], a
+.moveExisting
+    ld a, [hl]
+    dec a
+    jr z, .slotWithMinimalValue
+    xor a
+    ld [hli], a
+    jr .next
+.slotWithMinimalValue
+    ld a, [de]
+    ld [hli], a
+.next
+    inc de
+    dec c
+    jr nz, .filterMinimalEntries
+    ld hl, wBuffer
+    ret
+.useOriginalMoveSet
+    ld hl, wEnemyMonMoves
+    ret
+
 ; Simple PPO Policy for choosing moves
 
 InitializePolicy:
@@ -28,7 +138,7 @@ ChooseMovePPO:
     inc hl
     ld h, [hl]     ; Move 4
 
-    ; Check which moves are available
+    ; Initialize move counter
     ld l, 4
     ld a, c
     cp 0
@@ -51,26 +161,25 @@ ChooseMovePPO:
     dec l
 .move4_exists
 
-    ; If only one move is available, select it
-    ld a, l
-    cp 1
-    jr nz, .choose_move
+    ; Adjust probabilities based on the number of available moves
+    ld hl, wPolicyMove1
+    ld a, [hl]
+    div l
+    ld [hl], a
+    inc hl
+    ld a, [hl]
+    div l
+    ld [hl], a
+    inc hl
+    ld a, [hl]
+    div l
+    ld [hl], a
+    inc hl
+    ld a, [hl]
+    div l
+    ld [hl], a
 
-    ; Only one move is available, find which one it is
-    ld a, c
-    cp 0
-    jr nz, Move1
-    ld a, d
-    cp 0
-    jr nz, Move2
-    ld a, e
-    cp 0
-    jr nz, Move3
-    ld a, h
-    jr Move4
-
-.choose_move
-    ; Select a move based on available moves and adjusted probabilities
+    ; Select a move based on adjusted probabilities
     ld hl, wPolicyMove1
     ld a, [hl]
     cp b
@@ -110,10 +219,6 @@ Move2:
 Move1:
     ld a, c
     jr MoveFound
-
-AIEnemyTrainerChooseMoves:
-    call ChooseMovePPO
-    ret
 
 ; Data section for policy probabilities
 wPolicyMove1: db 25
