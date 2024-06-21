@@ -42,17 +42,13 @@ CalculatePPOPolicy:
 
     ; Load weight
     ld c, b            ; Use c to hold the index
-    ld a, PPOWeights
-    add a, c
-    ld l, a
-    ld h, 0
+    ld hl, PPOWeights  ; Point to PPOWeights
+    add hl, bc
     ld c, [hl]         ; Load weight into c
 
     ; Load bias
-    ld a, PPOBiases
-    add a, b
-    ld l, a
-    ld h, 0
+    ld hl, PPOBiases   ; Point to PPOBiases
+    add hl, bc
     ld a, [hl]         ; Load bias into a
 
     add a, c           ; Add weight and bias
@@ -109,7 +105,6 @@ SampleMoveFromPolicy:
 .chooseMove4:
     ld hl, wEnemyMonMoves + 3
     ret
-
 
 AIMoveChoiceModificationFunctionPointers:
     dw AIMoveChoiceModification1
