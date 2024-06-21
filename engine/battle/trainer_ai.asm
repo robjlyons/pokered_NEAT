@@ -161,14 +161,58 @@ ChooseMovePPO:
     dec l
 .move4_exists
 
-    ; Calculate probabilities based on the number of available moves
+    ; Adjust probabilities based on the number of available moves
+    ld hl, wPolicyMove1
+    ld a, 25
+    ld [hl], a
+    inc hl
+    ld [hl], a
+    inc hl
+    ld [hl], a
+    inc hl
+    ld [hl], a
+
+    ; Adjust probabilities dynamically
+    ld a, l
+    cp 4
+    jr nz, .adjust3
+    ; No adjustment needed for 4 moves (25% each)
+    jr .choose_move
+.adjust3:
+    cp 3
+    jr nz, .adjust2
+    ; Adjust probabilities for 3 moves (33% each)
+    ld hl, wPolicyMove1
+    ld a, 33
+    ld [hl], a
+    inc hl
+    ld [hl], a
+    inc hl
+    ld [hl], a
+    ld a, 1
+    ld [hl], a
+    jr .choose_move
+.adjust2:
+    cp 2
+    jr nz, .adjust1
+    ; Adjust probabilities for 2 moves (50% each)
+    ld hl, wPolicyMove1
+    ld a, 50
+    ld [hl], a
+    inc hl
+    ld [hl], a
+    ld a, 0
+    inc hl
+    ld [hl], a
+    inc hl
+    ld [hl], a
+    jr .choose_move
+.adjust1:
+    ; Adjust probabilities for 1 move (100%)
     ld hl, wPolicyMove1
     ld a, 100
-    div l
-    ld c, a  ; c now holds the probability for each move slot
-
-    ld a, c
     ld [hl], a
+    ld a, 0
     inc hl
     ld [hl], a
     inc hl
@@ -176,6 +220,7 @@ ChooseMovePPO:
     inc hl
     ld [hl], a
 
+.choose_move:
     ; Select a move based on adjusted probabilities
     ld hl, wPolicyMove1
     ld a, [hl]
