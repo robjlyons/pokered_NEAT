@@ -62,21 +62,20 @@ ApplyMoveModifications:
     ld hl, AIMoveChoiceModificationFunctionPointers
     ld b, 4 ; number of modifications
 .next_modification
-    ld a, [hl]
-    or a
-    ret z ; no more modifications
-    ld c, a
+    ld e, [hl] ; Load lower byte of the address
     inc hl
-    ld a, [hl]
-    ld h, a
-    ld l, c
-    push hl
-    jp (hl)
-    pop hl
+    ld d, [hl] ; Load upper byte of the address
     inc hl
+    push hl    ; Save the current pointer
+    ld hl, de  ; Jump to the function address
+    call ExecuteModification
+    pop hl     ; Restore the pointer
     dec b
     jr nz, .next_modification
     ret
+
+ExecuteModification:
+    jp (hl)
 
 SampleMoveFromPolicy:
     ld hl, wBuffer
