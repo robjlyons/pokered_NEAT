@@ -92,6 +92,27 @@ PPOChooseAction:
 .move_chosen:
     RET
 
+GetRandomNumber:
+    ; Get a random number in range 0-255 using the game's RNG
+    LD HL, wRNGSeed
+    LD A, [HL]
+    LD E, A
+    LD D, $00
+    ; Simple LFSR (Linear Feedback Shift Register) for demonstration
+    LD B, $08  ; 8 bits
+.RandomLoop:
+    LD A, E
+    RRCA
+    JR NC, .SkipXOR
+    XOR $B4
+.SkipXOR:
+    RR E
+    RL D
+    DJNZ .RandomLoop
+    LD A, E
+    LD [HL], A
+    RET
+
 ; discourages moves that cause no damage but only a status ailment if player's mon already has one
 AIMoveChoiceModification1:
     ld a, [wBattleMonStatus]
