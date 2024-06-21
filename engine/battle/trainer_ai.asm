@@ -1,6 +1,5 @@
 INCLUDE "data/variables.asm"
 
-SECTION "Constants", ROMX
 DEF NUM_ACTIONS  EQU 4
 DEF MOVE_1       EQU 1
 DEF MOVE_2       EQU 2
