@@ -1,17 +1,17 @@
 SECTION "AIEnemyTrainerChooseMoves", ROMX
 
 ; Define constants for moves and other parameters
-NUM_ACTIONS  EQU 4
-MOVE_1       EQU 1
-MOVE_2       EQU 2
-MOVE_3       EQU 3
-MOVE_4       EQU 4
-DEFAULT_MOVE EQU MOVE_1
+DEF NUM_ACTIONS  EQU 4
+DEF MOVE_1       EQU 1
+DEF MOVE_2       EQU 2
+DEF MOVE_3       EQU 3
+DEF MOVE_4       EQU 4
+DEF DEFAULT_MOVE EQU MOVE_1
 
 ; Memory locations for PPO model parameters (these are placeholders)
-PPO_PARAMS   EQU $8000
-PPO_STATE    EQU $8100
-PPO_ACTIONS  EQU $8200
+DEF PPO_PARAMS   EQU $8000
+DEF PPO_STATE    EQU $8100
+DEF PPO_ACTIONS  EQU $8200
 
 AIEnemyTrainerChooseMoves:
     ; Initialize PPO model if needed
