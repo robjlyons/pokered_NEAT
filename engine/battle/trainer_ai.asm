@@ -8,26 +8,32 @@ PPOBiases:
 CalculatePPOPolicy:
     ; Load weights and biases
     ld hl, PPOWeights
-    ld de, PPOBiases
     
     ; Load move probabilities into wBuffer
-    ld hl, wBuffer
+    ld de, PPOBiases
     ld a, [hl]
     add a, [de]
-    ld [hli], a
+    ld hl, wBuffer
+    ld [hl], a
+    inc hl
+    inc de
     
     ; Repeat for all moves
-    ld a, [hl+1]
-    add a, [de+1]
-    ld [hli], a
+    ld a, [hl - 2]  ; Note: Adjusted to ensure correct indexing
+    add a, [de]
+    ld [hl], a
+    inc hl
+    inc de
+
+    ld a, [hl - 3]  ; Note: Adjusted to ensure correct indexing
+    add a, [de]
+    ld [hl], a
+    inc hl
+    inc de
     
-    ld a, [hl+2]
-    add a, [de+2]
-    ld [hli], a
-    
-    ld a, [hl+3]
-    add a, [de+3]
-    ld [hli], a
+    ld a, [hl - 4]  ; Note: Adjusted to ensure correct indexing
+    add a, [de]
+    ld [hl], a
     
     ret
 
@@ -706,4 +712,3 @@ AIPrintItemUse_:
 AIBattleUseItemText:
     text_far _AIBattleUseItemText
     text_end
-
