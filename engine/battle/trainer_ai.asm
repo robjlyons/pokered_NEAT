@@ -23,12 +23,15 @@ CalculatePPOPolicy:
     ld de, PPOBiases
     
     ; Initialize wBuffer with 0
-    ld bc, wBuffer
+    ld hl, wBuffer
     ld a, 0
-    ld (wBuffer), a
-    ld (wBuffer + 1), a
-    ld (wBuffer + 2), a
-    ld (wBuffer + 3), a
+    ld [hl], a
+    inc hl
+    ld [hl], a
+    inc hl
+    ld [hl], a
+    inc hl
+    ld [hl], a
 
     ; Iterate over each move slot
     ld hl, wEnemyMonMoves
