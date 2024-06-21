@@ -48,10 +48,17 @@ CalculatePPOPolicy:
 
 ; Function to sample a move based on policy probabilities in wBuffer
 SampleMoveFromPolicy:
-    ld a, [wBuffer]      ; probability of move 1
-    ld b, [wBuffer + 1]  ; probability of move 2
-    ld c, [wBuffer + 2]  ; probability of move 3
-    ld d, [wBuffer + 3]  ; probability of move 4
+    ld hl, wBuffer
+    ld a, [hl]      ; probability of move 1
+    ld b, a
+    inc hl
+    ld a, [hl]      ; probability of move 2
+    ld c, a
+    inc hl
+    ld a, [hl]      ; probability of move 3
+    ld d, a
+    inc hl
+    ld a, [hl]      ; probability of move 4
 
     ; Generate a random number and choose a move based on probabilities
     call Random
