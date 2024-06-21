@@ -9,7 +9,8 @@ PPOBiases:
 ; unused slots are filled with 0, all used slots may be chosen with equal probability
 AIEnemyTrainerChooseMoves:
     call CalculatePPOPolicy ; calculate the policy probabilities
-    call SampleMoveFromPolicy ; sample a move based on the calculated probabilities
+    call ApplyMoveModifications ; apply the move modifications
+    call SampleMoveFromPolicy ; sample a move based on the modified probabilities
     ld hl, wBuffer ; return the chosen move
     ret
 
@@ -55,6 +56,26 @@ CalculatePPOPolicy:
     inc b              ; Next weight and bias index
     cp 4               ; Check if all 4 moves are processed
     jr nz, .process_moves
+    ret
+
+ApplyMoveModifications:
+    ld hl, AIMoveChoiceModificationFunctionPointers
+    ld b, 4 ; number of modifications
+.next_modification
+    ld a, [hl]
+    or a
+    ret z ; no more modifications
+    ld c, a
+    inc hl
+    ld a, [hl]
+    ld h, a
+    ld l, c
+    push hl
+    call [hl]
+    pop hl
+    inc hl
+    dec b
+    jr nz, .next_modification
     ret
 
 SampleMoveFromPolicy:
