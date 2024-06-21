@@ -8,8 +8,7 @@ PPOBiases:
 CalculatePPOPolicy:
     ; Load weights and biases
     ld hl, PPOWeights
-    
-    ; Load move probabilities into wBuffer
+    ld de, PPOBiases
     ld a, [hl]
     ld c, a
     ld a, [de]
@@ -18,25 +17,33 @@ CalculatePPOPolicy:
     ld [hl], a
     inc hl
     inc de
-    inc hl
-    
+
     ; Repeat for all moves
-    ld a, [hl - 2]  ; Note: Adjusted to ensure correct indexing
-    add a, [de]
+    ld hl, PPOWeights + 1
+    ld a, [hl]
+    ld c, a
+    ld a, [de]
+    add a, c
     ld [hl], a
     inc hl
     inc de
 
-    ld a, [hl - 3]  ; Note: Adjusted to ensure correct indexing
-    add a, [de]
+    ld hl, PPOWeights + 2
+    ld a, [hl]
+    ld c, a
+    ld a, [de]
+    add a, c
     ld [hl], a
     inc hl
     inc de
-    
-    ld a, [hl - 4]  ; Note: Adjusted to ensure correct indexing
-    add a, [de]
+
+    ld hl, PPOWeights + 3
+    ld a, [hl]
+    ld c, a
+    ld a, [de]
+    add a, c
     ld [hl], a
-    
+
     ret
 
 ; Function to sample a move based on policy probabilities in wBuffer
