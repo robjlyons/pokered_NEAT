@@ -32,26 +32,31 @@ CalculatePPOPolicy:
     ; Load weights and biases
     ld hl, wEnemyMonMoves
     ld de, wBuffer
-    ld bc, 0
 
     ; Process moves
-    .process_moves:
-        ld a, [hl]         ; Load the move from wEnemyMonMoves
-        or a               ; Check if the move slot is empty
-        jr z, .skip_move   ; Skip if move slot is empty
+    ld b, 0  ; index for PPOWeights and PPOBiases
+.process_moves:
+    ld a, [hl]         ; Load the move from wEnemyMonMoves
+    or a               ; Check if the move slot is empty
+    jr z, .skip_move   ; Skip if move slot is empty
 
-        ld a, [PPOWeights + bc]
-        ld c, a
-        ld a, [PPOBiases + bc]
-        add a, c
-        ld [de], a         ; Store calculated probability in wBuffer
+    ld c, b            ; Use c to hold the index
+    ld a, PPOWeights
+    add a, c
+    ld c, [a]          ; Load weight into c
 
-    .skip_move:
-        inc hl             ; Next move slot in wEnemyMonMoves
-        inc de             ; Next buffer slot in wBuffer
-        inc bc             ; Next weight and bias
-        cp 4               ; Check if all 4 moves are processed
-        jr nz, .process_moves
+    ld a, PPOBiases
+    add a, b
+    ld a, [a]          ; Load bias into a
+    add a, c           ; Add weight and bias
+    ld [de], a         ; Store calculated probability in wBuffer
+
+.skip_move:
+    inc hl             ; Next move slot in wEnemyMonMoves
+    inc de             ; Next buffer slot in wBuffer
+    inc b              ; Next weight and bias index
+    cp 4               ; Check if all 4 moves are processed
+    jr nz, .process_moves
     ret
 
 ; Function to sample a move based on policy probabilities in wBuffer
