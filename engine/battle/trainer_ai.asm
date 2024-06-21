@@ -161,22 +161,19 @@ ChooseMovePPO:
     dec l
 .move4_exists
 
-    ; Adjust probabilities based on the number of available moves
+    ; Calculate probabilities based on the number of available moves
     ld hl, wPolicyMove1
-    ld a, [hl]
+    ld a, 100
     div l
+    ld c, a  ; c now holds the probability for each move slot
+
+    ld a, c
     ld [hl], a
     inc hl
-    ld a, [hl]
-    div l
     ld [hl], a
     inc hl
-    ld a, [hl]
-    div l
     ld [hl], a
     inc hl
-    ld a, [hl]
-    div l
     ld [hl], a
 
     ; Select a move based on adjusted probabilities
