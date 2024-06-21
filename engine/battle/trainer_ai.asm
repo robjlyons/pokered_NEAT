@@ -28,7 +28,7 @@ ChooseMovePPO:
     inc hl
     ld h, [hl]     ; Move 4
 
-    ; Initialize move counter
+    ; Check which moves are available
     ld l, 4
     ld a, c
     cp 0
@@ -51,25 +51,26 @@ ChooseMovePPO:
     dec l
 .move4_exists
 
-    ; Adjust probabilities based on the number of available moves
-    ld hl, wPolicyMove1
-    ld a, [hl]
-    div l
-    ld [hl], a
-    inc hl
-    ld a, [hl]
-    div l
-    ld [hl], a
-    inc hl
-    ld a, [hl]
-    div l
-    ld [hl], a
-    inc hl
-    ld a, [hl]
-    div l
-    ld [hl], a
+    ; If only one move is available, select it
+    ld a, l
+    cp 1
+    jr nz, .choose_move
 
-    ; Select a move based on adjusted probabilities
+    ; Only one move is available, find which one it is
+    ld a, c
+    cp 0
+    jr nz, Move1
+    ld a, d
+    cp 0
+    jr nz, Move2
+    ld a, e
+    cp 0
+    jr nz, Move3
+    ld a, h
+    jr Move4
+
+.choose_move
+    ; Select a move based on available moves and adjusted probabilities
     ld hl, wPolicyMove1
     ld a, [hl]
     cp b
