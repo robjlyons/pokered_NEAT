@@ -85,7 +85,7 @@ SelectMoveBasedOnProbabilities:
     ; If not less than cumulativeProb3, select move 4
 
 .selectMove4:
-    ld hl, stateMoves
+    ld hl, wEnemyMonMoves
     ld de, MOVE_LENGTH * 3
     add hl, de
     ld a, [hl]
@@ -93,13 +93,13 @@ SelectMoveBasedOnProbabilities:
     ret
 
 .selectMove1:
-    ld hl, stateMoves
+    ld hl, wEnemyMonMoves
     ld a, [hl]
     ld [selectedMove1], a
     ret
 
 .selectMove2:
-    ld hl, stateMoves
+    ld hl, wEnemyMonMoves
     ld de, MOVE_LENGTH
     add hl, de
     ld a, [hl]
@@ -107,7 +107,7 @@ SelectMoveBasedOnProbabilities:
     ret
 
 .selectMove3:
-    ld hl, stateMoves
+    ld hl, wEnemyMonMoves
     ld de, MOVE_LENGTH * 2
     add hl, de
     ld a, [hl]
