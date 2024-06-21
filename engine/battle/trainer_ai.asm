@@ -1,18 +1,7 @@
-; Assuming NUM_MOVES is defined in includes.asm or another included file
-
-; Define constants for memory locations and weights if not already defined
-; These should be defined only if not already defined
-IFNDEF MOVE_DAMAGE_WEIGHT
+; Ensure these constants are only defined if not already defined elsewhere
 MOVE_DAMAGE_WEIGHT:        equ 5
-ENDIF
-
-IFNDEF MOVE_EFFECTIVENESS_WEIGHT
 MOVE_EFFECTIVENESS_WEIGHT: equ 3
-ENDIF
-
-IFNDEF MOVE_STATUS_WEIGHT
 MOVE_STATUS_WEIGHT:        equ 2
-ENDIF
 
 ; Function to choose moves based on state
 AIEnemyTrainerChooseMoves:
