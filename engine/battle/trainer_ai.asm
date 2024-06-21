@@ -28,7 +28,48 @@ ChooseMovePPO:
     inc hl
     ld h, [hl]     ; Move 4
 
-    ; Check if the generated random number falls within the range of each move's probability
+    ; Initialize move counter
+    ld l, 4
+    ld a, c
+    cp 0
+    jr nz, .move1_exists
+    dec l
+.move1_exists
+    ld a, d
+    cp 0
+    jr nz, .move2_exists
+    dec l
+.move2_exists
+    ld a, e
+    cp 0
+    jr nz, .move3_exists
+    dec l
+.move3_exists
+    ld a, h
+    cp 0
+    jr nz, .move4_exists
+    dec l
+.move4_exists
+
+    ; Adjust probabilities based on the number of available moves
+    ld hl, wPolicyMove1
+    ld a, [hl]
+    div l
+    ld [hl], a
+    inc hl
+    ld a, [hl]
+    div l
+    ld [hl], a
+    inc hl
+    ld a, [hl]
+    div l
+    ld [hl], a
+    inc hl
+    ld a, [hl]
+    div l
+    ld [hl], a
+
+    ; Select a move based on adjusted probabilities
     ld hl, wPolicyMove1
     ld a, [hl]
     cp b
@@ -42,19 +83,32 @@ ChooseMovePPO:
     cp b
     jr c, Move3
     inc hl
-    ; Default to Move 4
+    ; Default to Move 4 if it exists, otherwise fallback to an existing move
 Move4:
     ld a, h
+    cp 0
+    jr nz, MoveFound
+Move3Fallback:
+    ld a, e
+    cp 0
+    jr nz, MoveFound
+Move2Fallback:
+    ld a, d
+    cp 0
+    jr nz, MoveFound
+Move1Fallback:
+    ld a, c
+MoveFound:
     ret
 Move3:
     ld a, e
-    ret
+    jr MoveFound
 Move2:
     ld a, d
-    ret
+    jr MoveFound
 Move1:
     ld a, c
-    ret
+    jr MoveFound
 
 AIEnemyTrainerChooseMoves:
     call ChooseMovePPO
