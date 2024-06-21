@@ -1,2 +1,6 @@
 SECTION "Variables", WRAM0
+
+SECTION "Constants", ROMX
+DEF NUM_ACTIONS  EQU 4
+
 wValidMoves: DS NUM_ACTIONS
