@@ -135,8 +135,8 @@ AIMoveChoiceModification1:
     ret z ; return if no status ailment on player's mon
     ld hl, wBuffer - 1 ; temp move selection array (-1 byte offset)
     ld de, wEnemyMonMoves ; enemy moves
-    ld b, NUM_MOVES + 1
-.nextMove
+    ld b, 4
+.nextMove1
     dec b
     ret z ; processed all 4 moves
     inc hl
@@ -147,7 +147,7 @@ AIMoveChoiceModification1:
     call ReadMove
     ld a, [wEnemyMovePower]
     and a
-    jr nz, .nextMove
+    jr nz, .nextMove1
     ld a, [wEnemyMoveEffect]
     push hl
     push de
@@ -158,11 +158,11 @@ AIMoveChoiceModification1:
     pop bc
     pop de
     pop hl
-    jr nc, .nextMove
+    jr nc, .nextMove1
     ld a, [hl]
     add a, $5 ; heavily discourage move
     ld [hl], a
-    jr .nextMove
+    jr .nextMove1
 
 StatusAilmentMoveEffects:
     db EFFECT_01 ; unused sleep effect
@@ -180,8 +180,8 @@ AIMoveChoiceModification2:
     ret nz
     ld hl, wBuffer - 1 ; temp move selection array (-1 byte offset)
     ld de, wEnemyMonMoves ; enemy moves
-    ld b, NUM_MOVES + 1
-.nextMove
+    ld b, 4
+.nextMove2
     dec b
     ret z ; processed all 4 moves
     inc hl
@@ -192,17 +192,17 @@ AIMoveChoiceModification2:
     call ReadMove
     ld a, [wEnemyMoveEffect]
     cp ATTACK_UP1_EFFECT
-    jr c, .nextMove
+    jr c, .nextMove2
     cp BIDE_EFFECT
     jr c, .preferMove
     cp ATTACK_UP2_EFFECT
-    jr c, .nextMove
+    jr c, .nextMove2
     cp POISON_EFFECT
     jr c, .preferMove
-    jr .nextMove
+    jr .nextMove2
 .preferMove
     dec [hl] ; slightly encourage this move
-    jr .nextMove
+    jr .nextMove2
 
 ; encourages moves that are effective against the player's mon (even if non-damaging).
 ; discourage damaging moves that are ineffective or not very effective against the player's mon,
@@ -210,8 +210,8 @@ AIMoveChoiceModification2:
 AIMoveChoiceModification3:
     ld hl, wBuffer - 1 ; temp move selection array (-1 byte offset)
     ld de, wEnemyMonMoves ; enemy moves
-    ld b, NUM_MOVES + 1
-.nextMove
+    ld b, 4
+.nextMove3
     dec b
     ret z ; processed all 4 moves
     inc hl
@@ -229,10 +229,10 @@ AIMoveChoiceModification3:
     pop hl
     ld a, [wTypeEffectiveness]
     cp $10
-    jr z, .nextMove
+    jr z, .nextMove3
     jr c, .notEffectiveMove
     dec [hl] ; slightly encourage this move
-    jr .nextMove
+    jr .nextMove3
 .notEffectiveMove ; discourages non-effective moves if better moves are available
     push hl
     push de
@@ -240,7 +240,7 @@ AIMoveChoiceModification3:
     ld a, [wEnemyMoveType]
     ld d, a
     ld hl, wEnemyMonMoves  ; enemy moves
-    ld b, NUM_MOVES + 1
+    ld b, 4
     ld c, $0
 .loopMoves
     dec b
@@ -271,9 +271,9 @@ AIMoveChoiceModification3:
     pop de
     pop hl
     and a
-    jr z, .nextMove
+    jr z, .nextMove3
     inc [hl] ; slightly discourage this move
-    jr .nextMove
+    jr .nextMove3
 AIMoveChoiceModification4:
     ret
 
@@ -750,5 +750,5 @@ AIPrintItemUse_:
     jp PrintText
 
 AIBattleUseItemText:
-    text_far _AIBattleUseItemText
+    text_far _AIBattleWithdrawText
     text_end
