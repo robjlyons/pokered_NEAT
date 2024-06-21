@@ -19,9 +19,6 @@ AIEnemyTrainerChooseMoves:
     ; Initialize PPO model if needed
     CALL InitializePPOModel
 
-    ; Get available moves
-    CALL LoadValidMoves
-
     ; Call PPO model to choose action
     CALL PPOChooseAction
 
