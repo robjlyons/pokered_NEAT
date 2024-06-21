@@ -16,17 +16,21 @@ AIEnemyTrainerChooseMoves:
 CalculatePPOPolicy:
     ; Initialize wBuffer with 0
     ld hl, wBuffer
-    ld b, 4
-.init_buffer
-    ld [hl], 0
+    ld a, 0
+    ld [hl], a
     inc hl
-    dec b
-    jr nz, .init_buffer
+    ld [hl], a
+    inc hl
+    ld [hl], a
+    inc hl
+    ld [hl], a
 
     ; Load weights and biases and process moves
     ld hl, wEnemyMonMoves
     ld de, wBuffer
 
+    ; Process moves
+    ld b, 0  ; index for PPOWeights and PPOBiases
 .process_moves
     ld a, [hl]         ; Load the move from wEnemyMonMoves
     or a               ; Check if the move slot is empty
