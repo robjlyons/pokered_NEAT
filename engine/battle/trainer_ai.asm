@@ -64,13 +64,14 @@ SelectMoveBasedOnProbabilities:
 PPOModelFunction:
     ; Placeholder: Just return uniform probabilities
     ld hl, moveProbabilities
-    ld (hl), 25
+    ld a, 25
+    ld (hl), a
     inc hl
-    ld (hl), 25
+    ld (hl), a
     inc hl
-    ld (hl), 25
+    ld (hl), a
     inc hl
-    ld (hl), 25
+    ld (hl), a
     ret
 
 ; This is a placeholder function that represents the PPO model
