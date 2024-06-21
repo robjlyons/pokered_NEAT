@@ -1,128 +1,96 @@
-; Define policy network weights and biases
-PPOWeights:
-    db 1, 1, 1, 1 ; Placeholder weights for simplicity
+SECTION "AIEnemyTrainerChooseMoves", ROMX
 
-PPOBiases:
-    db 0, 0, 0, 0 ; Placeholder biases for simplicity
+; Define constants for moves and other parameters
+NUM_ACTIONS  EQU 4
+MOVE_1       EQU 1
+MOVE_2       EQU 2
+MOVE_3       EQU 3
+MOVE_4       EQU 4
+DEFAULT_MOVE EQU MOVE_1
 
-; creates a set of moves that may be used and returns its address in hl
-; unused slots are filled with 0, all used slots may be chosen with equal probability
+; Memory locations for PPO model parameters (these are placeholders)
+PPO_PARAMS   EQU $8000
+PPO_STATE    EQU $8100
+PPO_ACTIONS  EQU $8200
+
 AIEnemyTrainerChooseMoves:
-    call CalculatePPOPolicy ; calculate the policy probabilities
-    call ApplyMoveModifications ; apply the move modifications
-    call SampleMoveFromPolicy ; sample a move based on the modified probabilities
-    ld hl, wBuffer ; return the chosen move
-    ret
+    ; Initialize PPO model if needed
+    CALL InitializePPOModel
 
-CalculatePPOPolicy:
-    ; Initialize wBuffer with 0
-    ld hl, wBuffer
-    xor a
-    ld [hl], a
-    inc hl
-    ld [hl], a
-    inc hl
-    ld [hl], a
-    inc hl
-    ld [hl], a
+    ; Get available moves
+    LD HL, wEnemyMonMoves
+    LD A, [HL]
+    LD B, A
+    INC HL
+    LD A, [HL]
+    LD C, A
+    INC HL
+    LD A, [HL]
+    LD D, A
+    INC HL
+    LD A, [HL]
+    LD E, A
 
-    ; Load weights and biases and process moves
-    ld hl, wEnemyMonMoves
-    ld de, wBuffer
+    ; Call PPO model to choose action
+    CALL PPOChooseAction
 
-    ; Process moves
-    ld b, 0  ; index for PPOWeights and PPOBiases
-.process_moves
-    ld a, [hl]         ; Load the move from wEnemyMonMoves
-    or a               ; Check if the move slot is empty
-    jr z, .skip_move   ; Skip if move slot is empty
+    ; Set chosen move to wBuffer
+    LD HL, wBuffer
+    LD [HL], A
 
-    ; Load weight and bias, calculate the probability
-    ld c, b
-    ld hl, PPOWeights
-    add hl, bc
-    ld c, [hl]         ; Load weight into c
+    ; Handle less than 4 moves case
+    LD HL, wEnemyMonMoves
+    LD A, [HL]
+    CP 0
+    JR NZ, .has_moves
+    LD A, DEFAULT_MOVE
+.has_moves:
+    LD HL, wBuffer
+    LD [HL], A
 
-    ld hl, PPOBiases
-    add hl, bc
-    ld a, [hl]         ; Load bias into a
+    RET
 
-    add a, c           ; Add weight and bias
-    ld [de], a         ; Store calculated probability in wBuffer
+InitializePPOModel:
+    ; Initialize PPO model parameters if needed
+    ; Placeholder: Assuming we set some initial values
+    ; For now, we'll just set PPO_PARAMS to some default values
+    LD HL, PPO_PARAMS
+    LD [HL], $00  ; Example parameter
+    INC HL
+    LD [HL], $01  ; Example parameter
+    INC HL
+    LD [HL], $02  ; Example parameter
+    INC HL
+    LD [HL], $03  ; Example parameter
+    RET
 
-.skip_move
-    inc hl             ; Next move slot in wEnemyMonMoves
-    inc de             ; Next buffer slot in wBuffer
-    inc b              ; Next weight and bias index
-    cp 4               ; Check if all 4 moves are processed
-    jr nz, .process_moves
-    ret
+PPOChooseAction:
+    ; Placeholder for PPO action selection logic
+    ; This should set the chosen move in register A
+    ; For simplicity, we'll use a heuristic to choose an action
 
-ApplyMoveModifications:
-    ld hl, AIMoveChoiceModificationFunctionPointers
-    ld b, 4 ; number of modifications
-.next_modification
-    ld e, [hl] ; Load lower byte of the address
-    inc hl
-    ld d, [hl] ; Load upper byte of the address
-    inc hl
-    push hl    ; Save the current pointer
-    ld l, e    ; Set HL to the address of the function
-    ld h, d
-    call ExecuteModification
-    pop hl     ; Restore the pointer
-    dec b
-    jr nz, .next_modification
-    ret
+    ; Example heuristic: choose a random move among the available ones
+    LD HL, wEnemyMonMoves
+    LD A, [HL]
+    CP 0
+    JR NZ, .choose_random
 
-ExecuteModification:
-    jp (hl)
+    ; If no moves are available, default to MOVE_1
+    LD A, DEFAULT_MOVE
+    RET
 
-SampleMoveFromPolicy:
-    ld hl, wBuffer
-    ld a, [hl]
-    ld b, a
-    inc hl
-    ld a, [hl]
-    ld c, a
-    inc hl
-    ld a, [hl]
-    ld d, a
-    inc hl
-    ld a, [hl]
-
-    call Random
-    cp b
-    jr c, .chooseMove1
-    sub b
-    cp c
-    jr c, .chooseMove2
-    sub c
-    cp d
-    jr c, .chooseMove3
-    jr .chooseMove4
-
-.chooseMove1:
-    ld hl, wEnemyMonMoves
-    ret
-
-.chooseMove2:
-    ld hl, wEnemyMonMoves + 1
-    ret
-
-.chooseMove3:
-    ld hl, wEnemyMonMoves + 2
-    ret
-
-.chooseMove4:
-    ld hl, wEnemyMonMoves + 3
-    ret
-
-AIMoveChoiceModificationFunctionPointers:
-    dw AIMoveChoiceModification1
-    dw AIMoveChoiceModification2
-    dw AIMoveChoiceModification3
-    dw AIMoveChoiceModification4 ; unused, does nothing
+.choose_random:
+    ; Use some RNG function to choose between available moves
+    CALL GetRandomNumber
+    AND 0x03  ; Restrict to 4 options (0-3)
+    LD B, A
+    LD HL, wEnemyMonMoves
+    LD A, [HL + B]
+    CP 0
+    JR NZ, .move_chosen
+    LD A, DEFAULT_MOVE
+.move_chosen:
+    RET
 
 ; discourages moves that cause no damage but only a status ailment if player's mon already has one
 AIMoveChoiceModification1:
