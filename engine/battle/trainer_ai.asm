@@ -3,8 +3,6 @@ PrepareState:
     ; Load current HP of both Pokémon
     ld a, [wEnemyMonHP + 1]
     ld [stateEnemyHP], a
-    ld a, [wPlayerMonHP + 1]
-    ld [statePlayerHP], a
 
     ; Load types of both Pokémon
     ld a, [wTypeEffectiveness]
@@ -19,7 +17,6 @@ PrepareState:
 
     ; Load status conditions
     ld a, [wBattleMonStatus]
-    ld [wPlayerMonStatus], a
 
     ret
 
