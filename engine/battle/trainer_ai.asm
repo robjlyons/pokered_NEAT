@@ -31,7 +31,7 @@ CallPPOModel:
     call PPOModelFunction
 
     ; Assume the model writes probabilities to a fixed location
-    ld hl, moveProbabilities
+    ld hl, stateMoveProbabilities
     ; Now hl points to the move probabilities
     ; Select the move based on probabilities (e.g., by sampling)
     ret
@@ -43,7 +43,7 @@ SelectMoveBasedOnProbabilities:
     ; Here, we assume a simple weighted random selection
 
     ; Calculate cumulative probabilities
-    ld hl, moveProbabilities
+    ld hl, stateMoveProbabilities
     ld a, [hl]
     ld [cumulativeProb1], a
     inc hl
@@ -118,7 +118,7 @@ SelectMoveBasedOnProbabilities:
 ; In a real implementation, this would call the PPO model and write the probabilities to moveProbabilities
 PPOModelFunction:
     ; Placeholder: Just return uniform probabilities
-    ld hl, moveProbabilities
+    ld hl, stateMoveProbabilities
     ld a, 25
     ld [hl], a
     inc hl
@@ -140,23 +140,13 @@ CalculateReward:
     cp 0
     jr z, .enemyDefeated
 
-    ; Check if the player's Pokémon is defeated
-    ld a, [wPlayerMonHP + 1]
-    cp 0
-    jr z, .playerDefeated
-
     ; Neutral action reward
     ld a, 0
     ld [reward], a
     ret
 
 .enemyDefeated:
-    ld a, 100  ; Reward for winning
-    ld [reward], a
-    ret
-
-.playerDefeated:
-    ld a, -100 ; Penalty for losing
+    ld a, -100  ; Lost
     ld [reward], a
     ret
 
