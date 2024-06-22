@@ -254,7 +254,10 @@ stateMoveType:     db 0
 stateMovePower:    db 0
 stateMoves:        ds NUM_MOVES * MOVE_LENGTH
 stateStatus:       db 0
-moveProbabilities: ds NUM_MOVES
+selectedMove:          db 0
+stateMoveProbabilities: ds NUM_MOVES
+reward:                db 0
+learningRate:          db 1  ; Example learning rate (0.01 scaled to 1 for simplicity)
 cumulativeProb1:   db 0
 cumulativeProb2:   db 0
 cumulativeProb3:   db 0
