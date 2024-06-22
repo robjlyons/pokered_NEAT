@@ -126,15 +126,22 @@ UpdatePolicy:
     ld b, a
 
     ; Move hl to the correct position in the probabilities array
-    add hl, b
+    ld c, b
+.loop_hl:
+    dec c
+    jr z, .adjust_probability
+    inc hl
+    jr .loop_hl
 
+.adjust_probability:
     ; Adjust the probability for the selected move
     ld a, [reward]
     ld c, a
     ld a, [learningRate]
     call Multiply ; result in de
     ld a, d
-    add [hl]
+    ld b, [hl]
+    add a, b
     ld [hl], a
 
     ; Normalize probabilities
