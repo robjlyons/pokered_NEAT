@@ -1,46 +1,45 @@
+; Define storage for state representation and move probabilities
+stateEnemyHP:          db 0
+stateMoveProbabilities: ds NUM_MOVES
+selectedMove:          db 0
+reward:                db 0
+learningRate:          db 1  ; Example learning rate (0.01 scaled to 1 for simplicity)
+cumulativeProb1:       db 0
+cumulativeProb2:       db 0
+cumulativeProb3:       db 0
+
 ; Prepare the state representation
 PrepareState:
     ; Load current HP of the enemy Pokémon
     ld a, [wEnemyMonHP + 1]
     ld [stateEnemyHP], a
 
-    ; Load type effectiveness, move type, and move power
-    ld a, [wTypeEffectiveness]
-    ld [stateTypeEffectiveness], a
-    ld a, [wEnemyMoveType]
-    ld [stateMoveType], a
-    ld a, [wEnemyMovePower]
-    ld [stateMovePower], a
-
-    ; Load available moves and their properties
-    ld hl, wEnemyMonMoves
-    ld de, stateMoves
-    ld bc, NUM_MOVES * MOVE_LENGTH
-    call CopyData
-
-    ; Load status conditions
-    ld a, [wBattleMonStatus]
-    ld [stateStatus], a
+    ; Initialize move probabilities (assuming 4 moves with equal probability)
+    ld hl, stateMoveProbabilities
+    ld a, 25
+    ld [hl], a
+    inc hl
+    ld [hl], a
+    inc hl
+    ld [hl], a
+    inc hl
+    ld [hl], a
 
     ret
 
 ; Call PPO model to get move probabilities
 CallPPOModel:
     call PrepareState
-    ; Call the external PPO model function
+    ; Call the external PPO model function (Placeholder)
     call PPOModelFunction
 
-    ; Assume the model writes probabilities to a fixed location
-    ld hl, stateMoveProbabilities
-    ; Now hl points to the move probabilities
-    ; Select the move based on probabilities (e.g., by sampling)
     ret
 
-; Select a move based on the probabilities output by the PPO model
+; Select a move based on the probabilities
 SelectMoveBasedOnProbabilities:
-    ; This function selects a move based on the probabilities
-    ; Implementation depends on how probabilities are represented
-    ; Here, we assume a simple weighted random selection
+    ; Generate a random number
+    call Random
+    ; Assuming random number is in register A (0-255)
 
     ; Calculate cumulative probabilities
     ld hl, stateMoveProbabilities
@@ -48,26 +47,15 @@ SelectMoveBasedOnProbabilities:
     ld [cumulativeProb1], a
     inc hl
     ld a, [hl]
-    ld b, a
-    ld a, [cumulativeProb1]
-    add b
+    add [cumulativeProb1]
     ld [cumulativeProb2], a
     inc hl
     ld a, [hl]
-    ld b, a
-    ld a, [cumulativeProb2]
-    add b
+    add [cumulativeProb2]
     ld [cumulativeProb3], a
     inc hl
     ld a, [hl]
-    ld b, a
-    ld a, [cumulativeProb3]
-    add b
-    ld [cumulativeProb4], a
-
-    ; Generate a random number
-    call Random
-    ; Assuming random number is in register A
+    add [cumulativeProb3]
 
     ; Compare random number with cumulative probabilities to select a move
     ld hl, cumulativeProb1
@@ -85,53 +73,27 @@ SelectMoveBasedOnProbabilities:
     ; If not less than cumulativeProb3, select move 4
 
 .selectMove4:
-    ld hl, wEnemyMonMoves
-    ld de, MOVE_LENGTH * 3
-    add hl, de
-    ld a, [hl]
-    ld [selectedMove4], a
-    ret
+    ld a, 3
+    jr .end
 
 .selectMove1:
-    ld hl, wEnemyMonMoves
-    ld a, [hl]
-    ld [selectedMove1], a
-    ret
+    ld a, 0
+    jr .end
 
 .selectMove2:
-    ld hl, wEnemyMonMoves
-    ld de, MOVE_LENGTH
-    add hl, de
-    ld a, [hl]
-    ld [selectedMove2], a
-    ret
+    ld a, 1
+    jr .end
 
 .selectMove3:
-    ld hl, wEnemyMonMoves
-    ld de, MOVE_LENGTH * 2
-    add hl, de
-    ld a, [hl]
-    ld [selectedMove3], a
+    ld a, 2
+
+.end:
+    ld [selectedMove], a
     ret
 
-; This is a placeholder function that represents the PPO model
-; In a real implementation, this would call the PPO model and write the probabilities to moveProbabilities
+; Placeholder for the PPO model function (not used in this simple implementation)
 PPOModelFunction:
-    ; Placeholder: Just return uniform probabilities
-    ld hl, stateMoveProbabilities
-    ld a, 25
-    ld [hl], a
-    inc hl
-    ld [hl], a
-    inc hl
-    ld [hl], a
-    inc hl
-    ld [hl], a
     ret
-
-; Define storage for rewards and learning rate
-reward:       db 0
-learningRate: db 1  ; Example learning rate (0.01 scaled to 1 for simplicity)
 
 ; Calculate reward based on the outcome of the battle
 CalculateReward:
@@ -157,14 +119,8 @@ UpdatePolicy:
     ld b, a
 
     ; Move hl to the correct position in the probabilities array
-    ld c, b
-.loop_hl:
-    dec c
-    jr z, .adjust_probability
-    inc hl
-    jr .loop_hl
+    add hl, b
 
-.adjust_probability:
     ; Adjust the probability for the selected move
     ld a, [reward]
     ld c, a
@@ -200,19 +156,19 @@ NormalizeProbabilities:
     ld hl, stateMoveProbabilities
     xor a
     ld b, 0
-    ld c, 0
+    ld c, NUM_MOVES
 
 .loop_sum:
     add [hl]
     ld b, a
     inc hl
-    inc c
-    cp NUM_MOVES
+    dec c
     jr nz, .loop_sum
 
     ; Normalize each probability
     ld hl, stateMoveProbabilities
     ld e, b  ; Sum of all probabilities
+    ld c, NUM_MOVES
 
 .loop_normalize:
     ld a, [hl]
@@ -237,72 +193,39 @@ DivideByE:
     ld a, b
     ret
 
-; Define storage for state representation and move probabilities
-stateEnemyHP:      db 0
-stateTypeEffectiveness: db 0
-stateMoveType:     db 0
-stateMovePower:    db 0
-stateMoves:        ds NUM_MOVES * MOVE_LENGTH
-stateStatus:       db 0
-selectedMove:          db 0
-stateMoveProbabilities: ds NUM_MOVES
-cumulativeProb1:   db 0
-cumulativeProb2:   db 0
-cumulativeProb3:   db 0
-cumulativeProb4:   db 0
-selectedMove1:     db 0
-selectedMove2:     db 0
-selectedMove3:     db 0
-selectedMove4:     db 0
-
 AIEnemyTrainerChooseMoves:
     call CallPPOModel
-    ; Assume that the probabilities from the PPO model are stored in moveProbabilities
+    ; Assume that the probabilities from the PPO model are stored in stateMoveProbabilities
     ld hl, wBuffer ; init temporary move selection array
 
     ; Use the probabilities to select moves
     call SelectMoveBasedOnProbabilities
-    ld a, [selectedMove1]
+    ld a, [selectedMove]
     ld [hli], a   ; move 1
-    call SelectMoveBasedOnProbabilities
-    ld a, [selectedMove2]
-    ld [hli], a   ; move 2
-    call SelectMoveBasedOnProbabilities
-    ld a, [selectedMove3]
-    ld [hli], a   ; move 3
-    call SelectMoveBasedOnProbabilities
-    ld a, [selectedMove4]
-    ld [hl], a    ; move 4
 
     ret
 
 ReadMove:
-	push hl
-	push de
-	push bc
-	dec a
-	ld hl, Moves
-	ld bc, MOVE_LENGTH
-	call AddNTimes
-	ld de, wEnemyMoveNum
-	call CopyData
-	pop bc
-	pop de
-	pop hl
-	ret
+    push hl
+    push de
+    push bc
+    dec a
+    ld hl, Moves
+    ld bc, MOVE_LENGTH
+    call AddNTimes
+    ld de, wEnemyMoveNum
+    call CopyData
+    pop bc
+    pop de
+    pop hl
+    ret
 
 INCLUDE "data/trainers/move_choices.asm"
-
 INCLUDE "data/trainers/pic_pointers_money.asm"
-
 INCLUDE "data/trainers/names.asm"
-
 INCLUDE "engine/battle/misc.asm"
-
 INCLUDE "engine/battle/read_trainer_party.asm"
-
 INCLUDE "data/trainers/special_moves.asm"
-
 INCLUDE "data/trainers/parties.asm"
 
 TrainerAI:
