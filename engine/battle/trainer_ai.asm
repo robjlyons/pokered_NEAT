@@ -166,14 +166,23 @@ UpdatePolicy:
     ld a, [selectedMove]
     ld b, a
 
+    ; Move hl to the correct position in the probabilities array
+    ld c, b
+.loop_hl:
+    dec c
+    jr z, .adjust_probability
+    inc hl
+    jr .loop_hl
+
+.adjust_probability:
     ; Adjust the probability for the selected move
     ld a, [reward]
     ld c, a
     ld a, [learningRate]
     call Multiply ; result in de
     ld a, d
-    add [hl + b]
-    ld [hl + b], a
+    add [hl]
+    ld [hl], a
 
     ; Normalize probabilities
     call NormalizeProbabilities
@@ -192,44 +201,36 @@ Multiply:
     jr nc, .skip_add
     add hl, de
 .skip_add:
-    djnz .mul_loop
+    dec b
+    jr nz, .mul_loop
     ret
 
 ; Normalize probabilities to ensure they sum to 100
 NormalizeProbabilities:
     ld hl, stateMoveProbabilities
-    ld a, [hl]
+    xor a
+    ld b, 0
+    ld c, 0
+
+.loop_sum:
+    add [hl]
     ld b, a
     inc hl
-    ld a, [hl]
-    add b
-    ld c, a
-    inc hl
-    ld a, [hl]
-    add c
-    ld d, a
-    inc hl
-    ld a, [hl]
-    add d
-    ld e, a  ; Sum of all probabilities
+    inc c
+    cp NUM_MOVES
+    jr nz, .loop_sum
 
     ; Normalize each probability
     ld hl, stateMoveProbabilities
+    ld e, b  ; Sum of all probabilities
+
+.loop_normalize:
     ld a, [hl]
     call DivideByE
     ld [hl], a
     inc hl
-    ld a, [hl]
-    call DivideByE
-    ld [hl], a
-    inc hl
-    ld a, [hl]
-    call DivideByE
-    ld [hl], a
-    inc hl
-    ld a, [hl]
-    call DivideByE
-    ld [hl], a
+    dec c
+    jr nz, .loop_normalize
 
     ret
 
@@ -343,7 +344,12 @@ TrainerAI:
     ld h, [hl]
     ld l, a
     call Random
-    call CallPPOModel
+    call AIEnemyTrainerChooseMoves
+
+    ; Calculate reward and update policy after the move is executed
+    call CalculateReward
+    call UpdatePolicy
+
     ret
 
 INCLUDE "data/trainers/ai_pointers.asm"
