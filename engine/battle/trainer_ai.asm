@@ -7,6 +7,7 @@ learningRate:          db 1  ; Example learning rate (0.01 scaled to 1 for simpl
 cumulativeProb1:       db 0
 cumulativeProb2:       db 0
 cumulativeProb3:       db 0
+cumulativeProb4:       db 0
 
 ; Prepare the state representation
 PrepareState:
