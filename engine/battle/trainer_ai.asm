@@ -47,15 +47,22 @@ SelectMoveBasedOnProbabilities:
     ld [cumulativeProb1], a
     inc hl
     ld a, [hl]
-    add [cumulativeProb1]
+    ld b, a
+    ld a, [cumulativeProb1]
+    add a, b
     ld [cumulativeProb2], a
     inc hl
     ld a, [hl]
-    add [cumulativeProb2]
+    ld b, a
+    ld a, [cumulativeProb2]
+    add a, b
     ld [cumulativeProb3], a
     inc hl
     ld a, [hl]
-    add [cumulativeProb3]
+    ld b, a
+    ld a, [cumulativeProb3]
+    add a, b
+    ld [cumulativeProb4], a
 
     ; Compare random number with cumulative probabilities to select a move
     ld hl, cumulativeProb1
