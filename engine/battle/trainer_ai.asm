@@ -1,3 +1,8 @@
+; Debugging helpers (use specific memory locations to track progress)
+debugStep1: db 0
+debugStep2: db 0
+debugStep3: db 0
+
 ; Prepare the state representation
 PrepareState:
     ; Load current HP of the enemy Pokémon
@@ -27,6 +32,9 @@ PrepareState:
 ; Call PPO model to get move probabilities
 CallPPOModel:
     call PrepareState
+    ; Set debug step 1
+    ld a, 1
+    ld [debugStep1], a
     ; Call the external PPO model function
     call PPOModelFunction
 
@@ -65,20 +73,26 @@ SelectMoveBasedOnProbabilities:
     add a, b
     ld [cumulativeProb4], a
 
+    ; Set debug step 2
+    ld a, 2
+    ld [debugStep2], a
+
     ; Compare random number with cumulative probabilities to select a move
     ld a, [randomNumber]
-    ld a, [cumulativeProb1]
-    cp a
+    ld b, [cumulativeProb1]
+    cp b
     jr c, .selectMove1
-    ld a, [cumulativeProb2]
-    cp a
+    ld b, [cumulativeProb2]
+    cp b
     jr c, .selectMove2
-    ld a, [cumulativeProb3]
-    cp a
+    ld b, [cumulativeProb3]
+    cp b
     jr c, .selectMove3
     ; If not less than cumulativeProb3, select move 4
 
 .selectMove4:
+    ld a, 4
+    ld [debugStep3], a
     ld hl, wEnemyMonMoves
     ld de, MOVE_LENGTH * 3
     add hl, de
@@ -87,12 +101,16 @@ SelectMoveBasedOnProbabilities:
     ret
 
 .selectMove1:
+    ld a, 1
+    ld [debugStep3], a
     ld hl, wEnemyMonMoves
     ld a, [hl]
     ld [selectedMove], a
     ret
 
 .selectMove2:
+    ld a, 2
+    ld [debugStep3], a
     ld hl, wEnemyMonMoves
     ld de, MOVE_LENGTH
     add hl, de
@@ -101,6 +119,8 @@ SelectMoveBasedOnProbabilities:
     ret
 
 .selectMove3:
+    ld a, 3
+    ld [debugStep3], a
     ld hl, wEnemyMonMoves
     ld de, MOVE_LENGTH * 2
     add hl, de
@@ -206,8 +226,7 @@ NormalizeProbabilities:
     ld c, NUM_MOVES
 
 .loop_sum:
-    ld d, [hl]
-    add a, d
+    add a, [hl]
     ld b, a
     inc hl
     dec c
