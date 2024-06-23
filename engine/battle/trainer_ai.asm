@@ -61,13 +61,13 @@ SelectMoveBasedOnProbabilities:
 
     ; Compare random number with cumulative probabilities to select a move
     ld a, [cumulativeProb1]
-    cp a
+    cp [randomNumber]
     jr c, .selectMove1
     ld a, [cumulativeProb2]
-    cp a
+    cp [randomNumber]
     jr c, .selectMove2
     ld a, [cumulativeProb3]
-    cp a
+    cp [randomNumber]
     jr c, .selectMove3
     ; If not less than cumulativeProb3, select move 4
 
@@ -100,13 +100,6 @@ SelectMoveBasedOnProbabilities:
     ld a, [hl]
     ld [selectedMove], a
     ret
-
-; Define storage for cumulative probabilities and selected move
-cumulativeProb1:   db 0
-cumulativeProb2:   db 0
-cumulativeProb3:   db 0
-cumulativeProb4:   db 0
-selectedMove:      db 0
 
 ; This is a placeholder function that represents the PPO model
 ; In a real implementation, this would call the PPO model and write the probabilities to moveProbabilities
@@ -152,7 +145,7 @@ UpdatePolicy:
 
     ; Move hl to the correct position in the probabilities array
     ld c, b
-    .loop_hl:
+.loop_hl:
     dec c
     jr z, .adjust_probability
     inc hl
@@ -238,12 +231,13 @@ stateMoveType:     db 0
 stateMovePower:    db 0
 stateMoves:        ds NUM_MOVES * MOVE_LENGTH
 stateStatus:       db 0
-selectedMove:      db 0
 stateMoveProbabilities: ds NUM_MOVES
 cumulativeProb1:   db 0
 cumulativeProb2:   db 0
 cumulativeProb3:   db 0
 cumulativeProb4:   db 0
+selectedMove:      db 0
+randomNumber:      db 0  ; Temporary storage for the random number
 
 AIEnemyTrainerChooseMoves:
     call CallPPOModel
@@ -325,6 +319,7 @@ TrainerAI:
     ld h, [hl]
     ld l, a
     call Random
+    ld [randomNumber], a  ; Store the random number
     call AIEnemyTrainerChooseMoves
 
     ; Calculate reward and update policy after the move is executed
@@ -540,7 +535,7 @@ AIRecoverHP:
     ld a, [de]
     dec de
     ld [wHPBarMaxHP], a
-    sub a, b
+    sub b
     ld a, [hli]
     ld b, a
     ld a, [de]
@@ -590,7 +585,7 @@ AISwitchIfEnoughMons:
     jr nz, .loop
 
     ld a, d ; how many available monsters are there?
-    cp a, 2    ; don't bother if only 1
+    cp 2    ; don't bother if only 1
     jp nc, SwitchEnemyMon
     and a
     ret
@@ -688,10 +683,10 @@ AICheckIfHPBelowFraction:
     ld a, [hl]
     ld d, a
     ld a, d
-    sub a, b
+    sub b
     ret nz
     ld a, e
-    sub a, c
+    sub c
     ret
 
 AIUseXAttack:
