@@ -40,7 +40,7 @@ CallPPOModel:
 SelectMoveBasedOnProbabilities:
     ; Generate a random number
     call Random
-    ; Assuming random number is in register A (0-255)
+    ld [randomNumber], a
 
     ; Calculate cumulative probabilities
     ld hl, stateMoveProbabilities
@@ -64,11 +64,14 @@ SelectMoveBasedOnProbabilities:
 
     ; Compare random number with cumulative probabilities to select a move
     ld a, [randomNumber]
-    cp [cumulativeProb1]
+    ld b, [cumulativeProb1]
+    cp b
     jr c, .selectMove1
-    cp [cumulativeProb2]
+    ld b, [cumulativeProb2]
+    cp b
     jr c, .selectMove2
-    cp [cumulativeProb3]
+    ld b, [cumulativeProb3]
+    cp b
     jr c, .selectMove3
     ; If not less than cumulativeProb3, select move 4
 
@@ -167,7 +170,8 @@ UpdatePolicy:
     ld a, [learningRate]
     call Multiply ; result in de
     ld a, d
-    add a, [hl]
+    ld b, [hl]
+    add a, b
     ld [hl], a
 
     ; Normalize probabilities
@@ -581,7 +585,7 @@ AISwitchIfEnoughMons:
     jr nz, .loop
 
     ld a, d ; how many available monsters are there?
-    cp a, 2    ; don't bother if only 1
+    cp 2    ; don't bother if only 1
     jp nc, SwitchEnemyMon
     and a
     ret
@@ -679,10 +683,10 @@ AICheckIfHPBelowFraction:
     ld a, [hl]
     ld d, a
     ld a, d
-    sub a, b
+    sub b
     ret nz
     ld a, e
-    sub a, c
+    sub c
     ret
 
 AIUseXAttack:
