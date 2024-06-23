@@ -48,26 +48,27 @@ SelectMoveBasedOnProbabilities:
     ld [cumulativeProb1], a
     inc hl
     ld a, [hl]
-    add a, [cumulativeProb1]
+    ld b, [cumulativeProb1]
+    add a, b
     ld [cumulativeProb2], a
     inc hl
     ld a, [hl]
-    add a, [cumulativeProb2]
+    ld b, [cumulativeProb2]
+    add a, b
     ld [cumulativeProb3], a
     inc hl
     ld a, [hl]
-    add a, [cumulativeProb3]
+    ld b, [cumulativeProb3]
+    add a, b
     ld [cumulativeProb4], a
 
     ; Compare random number with cumulative probabilities to select a move
-    ld a, [cumulativeProb1]
-    cp [randomNumber]
+    ld a, [randomNumber]
+    cp [cumulativeProb1]
     jr c, .selectMove1
-    ld a, [cumulativeProb2]
-    cp [randomNumber]
+    cp [cumulativeProb2]
     jr c, .selectMove2
-    ld a, [cumulativeProb3]
-    cp [randomNumber]
+    cp [cumulativeProb3]
     jr c, .selectMove3
     ; If not less than cumulativeProb3, select move 4
 
@@ -100,6 +101,14 @@ SelectMoveBasedOnProbabilities:
     ld a, [hl]
     ld [selectedMove], a
     ret
+
+; Define storage for cumulative probabilities and selected move
+cumulativeProb1:   db 0
+cumulativeProb2:   db 0
+cumulativeProb3:   db 0
+cumulativeProb4:   db 0
+selectedMove:      db 0
+randomNumber:      db 0
 
 ; This is a placeholder function that represents the PPO model
 ; In a real implementation, this would call the PPO model and write the probabilities to moveProbabilities
@@ -232,12 +241,6 @@ stateMovePower:    db 0
 stateMoves:        ds NUM_MOVES * MOVE_LENGTH
 stateStatus:       db 0
 stateMoveProbabilities: ds NUM_MOVES
-cumulativeProb1:   db 0
-cumulativeProb2:   db 0
-cumulativeProb3:   db 0
-cumulativeProb4:   db 0
-selectedMove:      db 0
-randomNumber:      db 0  ; Temporary storage for the random number
 
 AIEnemyTrainerChooseMoves:
     call CallPPOModel
@@ -276,17 +279,11 @@ ReadMove:
     ret
 
 INCLUDE "data/trainers/move_choices.asm"
-
 INCLUDE "data/trainers/pic_pointers_money.asm"
-
 INCLUDE "data/trainers/names.asm"
-
 INCLUDE "engine/battle/misc.asm"
-
 INCLUDE "engine/battle/read_trainer_party.asm"
-
 INCLUDE "data/trainers/special_moves.asm"
-
 INCLUDE "data/trainers/parties.asm"
 
 TrainerAI:
@@ -319,7 +316,6 @@ TrainerAI:
     ld h, [hl]
     ld l, a
     call Random
-    ld [randomNumber], a  ; Store the random number
     call AIEnemyTrainerChooseMoves
 
     ; Calculate reward and update policy after the move is executed
@@ -585,7 +581,7 @@ AISwitchIfEnoughMons:
     jr nz, .loop
 
     ld a, d ; how many available monsters are there?
-    cp 2    ; don't bother if only 1
+    cp a, 2    ; don't bother if only 1
     jp nc, SwitchEnemyMon
     and a
     ret
@@ -683,10 +679,10 @@ AICheckIfHPBelowFraction:
     ld a, [hl]
     ld d, a
     ld a, d
-    sub b
+    sub a, b
     ret nz
     ld a, e
-    sub c
+    sub a, c
     ret
 
 AIUseXAttack:
