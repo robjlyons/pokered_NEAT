@@ -1,30 +1,3 @@
-; Include necessary files
-INCLUDE "data/trainers/move_choices.asm"
-INCLUDE "data/trainers/pic_pointers_money.asm"
-INCLUDE "data/trainers/names.asm"
-INCLUDE "engine/battle/misc.asm"
-INCLUDE "engine/battle/read_trainer_party.asm"
-INCLUDE "data/trainers/special_moves.asm"
-INCLUDE "data/trainers/parties.asm"
-INCLUDE "data/trainers/ai_pointers.asm"
-
-; Define constants if not already defined
-; NUM_MOVES EQU 4
-; MOVE_LENGTH EQU 1
-
-; Define storage for state representation and move probabilities
-stateEnemyHP:      ds 1
-stateTypeEffectiveness: ds 1
-stateMoveType:     ds 1
-stateMovePower:    ds 1
-stateMoves:        ds NUM_MOVES * MOVE_LENGTH
-stateStatus:       ds 1
-selectedMove:      ds 1
-stateMoveProbabilities: ds NUM_MOVES
-cumulativeProb:    ds NUM_MOVES
-reward:            ds 1
-learningRate:      ds 1 ; Example learning rate (0.01 scaled to 1 for simplicity)
-
 ; Prepare the state representation
 PrepareState:
     ; Load current HP of the enemy Pokémon
@@ -69,40 +42,66 @@ SelectMoveBasedOnProbabilities:
     ; Implementation depends on how probabilities are represented
     ; Here, we assume a simple weighted random selection
 
-    ; Generate a random number
-    call Random
-    ; Assuming random number is in register A (0-255)
-
     ; Calculate cumulative probabilities
     ld hl, stateMoveProbabilities
-    ld de, cumulativeProb
-    xor a
-.loop_cumulative:
-    ld b, [hl]
-    add a, b
-    ld [de], a
+    ld a, [hl]
+    ld [cumulativeProb1], a
     inc hl
-    inc de
-    dec b
-    jr nz, .loop_cumulative
+    ld a, [hl]
+    add a, [cumulativeProb1]
+    ld [cumulativeProb2], a
+    inc hl
+    ld a, [hl]
+    add a, [cumulativeProb2]
+    ld [cumulativeProb3], a
+    inc hl
+    ld a, [hl]
+    add a, [cumulativeProb3]
+    ld [cumulativeProb4], a
+
+    ; Generate a random number
+    call Random
+    ; Assuming random number is in register A
 
     ; Compare random number with cumulative probabilities to select a move
-    ld hl, cumulativeProb
-.loop_compare:
-    ld b, [hl]
-    cp b
-    jr c, .move_found
-    inc hl
-    dec b
-    jr nz, .loop_compare
+    ld a, [cumulativeProb1]
+    cp a
+    jr c, .selectMove1
+    ld a, [cumulativeProb2]
+    cp a
+    jr c, .selectMove2
+    ld a, [cumulativeProb3]
+    cp a
+    jr c, .selectMove3
+    ; If not less than cumulativeProb3, select move 4
 
-    ; Default to the last move if not found
-    ld a, NUM_MOVES - 1
+.selectMove4:
+    ld hl, wEnemyMonMoves
+    ld de, MOVE_LENGTH * 3
+    add hl, de
+    ld a, [hl]
     ld [selectedMove], a
     ret
 
-.move_found:
-    ld a, (hl - cumulativeProb)
+.selectMove1:
+    ld hl, wEnemyMonMoves
+    ld a, [hl]
+    ld [selectedMove], a
+    ret
+
+.selectMove2:
+    ld hl, wEnemyMonMoves
+    ld de, MOVE_LENGTH
+    add hl, de
+    ld a, [hl]
+    ld [selectedMove], a
+    ret
+
+.selectMove3:
+    ld hl, wEnemyMonMoves
+    ld de, MOVE_LENGTH * 2
+    add hl, de
+    ld a, [hl]
     ld [selectedMove], a
     ret
 
@@ -121,6 +120,10 @@ PPOModelFunction:
     ld [hl], a
     ret
 
+; Define storage for rewards and learning rate
+reward:       db 0
+learningRate: db 1  ; Example learning rate (0.01 scaled to 1 for simplicity)
+
 ; Calculate reward based on the outcome of the battle
 CalculateReward:
     ; Check if the enemy Pokémon is defeated
@@ -134,7 +137,7 @@ CalculateReward:
     ret
 
 .enemyDefeated:
-    ld a, 100  ; Reward for defeating the enemy Pokémon
+    ld a, 100  ; Reward value for defeating enemy
     ld [reward], a
     ret
 
@@ -142,11 +145,17 @@ CalculateReward:
 UpdatePolicy:
     ld hl, stateMoveProbabilities
     ld a, [selectedMove]
-    ld c, a
+    ld b, a
 
     ; Move hl to the correct position in the probabilities array
-    add hl, c
+    ld c, b
+    .loop_hl:
+    dec c
+    jr z, .adjust_probability
+    inc hl
+    jr .loop_hl
 
+.adjust_probability:
     ; Adjust the probability for the selected move
     ld a, [reward]
     ld c, a
@@ -194,6 +203,7 @@ NormalizeProbabilities:
     ; Normalize each probability
     ld hl, stateMoveProbabilities
     ld e, b  ; Sum of all probabilities
+    ld c, NUM_MOVES
 
 .loop_normalize:
     ld a, [hl]
@@ -218,6 +228,20 @@ DivideByE:
     ld a, b
     ret
 
+; Define storage for state representation and move probabilities
+stateEnemyHP:      db 0
+stateTypeEffectiveness: db 0
+stateMoveType:     db 0
+stateMovePower:    db 0
+stateMoves:        ds NUM_MOVES * MOVE_LENGTH
+stateStatus:       db 0
+selectedMove:      db 0
+stateMoveProbabilities: ds NUM_MOVES
+cumulativeProb1:   db 0
+cumulativeProb2:   db 0
+cumulativeProb3:   db 0
+cumulativeProb4:   db 0
+
 AIEnemyTrainerChooseMoves:
     call CallPPOModel
     ; Assume that the probabilities from the PPO model are stored in stateMoveProbabilities
@@ -225,19 +249,48 @@ AIEnemyTrainerChooseMoves:
 
     ; Use the probabilities to select moves
     call SelectMoveBasedOnProbabilities
-    ld a, [selectedMove1]
+    ld a, [selectedMove]
     ld [hli], a   ; move 1
     call SelectMoveBasedOnProbabilities
-    ld a, [selectedMove2]
+    ld a, [selectedMove]
     ld [hli], a   ; move 2
     call SelectMoveBasedOnProbabilities
-    ld a, [selectedMove3]
+    ld a, [selectedMove]
     ld [hli], a   ; move 3
     call SelectMoveBasedOnProbabilities
-    ld a, [selectedMove4]
+    ld a, [selectedMove]
     ld [hl], a    ; move 4
 
     ret
+
+ReadMove:
+    push hl
+    push de
+    push bc
+    dec a
+    ld hl, Moves
+    ld bc, MOVE_LENGTH
+    call AddNTimes
+    ld de, wEnemyMoveNum
+    call CopyData
+    pop bc
+    pop de
+    pop hl
+    ret
+
+INCLUDE "data/trainers/move_choices.asm"
+
+INCLUDE "data/trainers/pic_pointers_money.asm"
+
+INCLUDE "data/trainers/names.asm"
+
+INCLUDE "engine/battle/misc.asm"
+
+INCLUDE "engine/battle/read_trainer_party.asm"
+
+INCLUDE "data/trainers/special_moves.asm"
+
+INCLUDE "data/trainers/parties.asm"
 
 TrainerAI:
     and a
@@ -277,6 +330,8 @@ TrainerAI:
 
     ret
 
+INCLUDE "data/trainers/ai_pointers.asm"
+
 JugglerAI:
     cp 25 percent + 1
     ret nc
@@ -311,7 +366,7 @@ CooltrainerFAI:
     jp AISwitchIfEnoughMons
 
 BrockAI:
-    ; if his active monster has a status condition, use a full heal
+; if his active monster has a status condition, use a full heal
     ld a, [wEnemyMonStatus]
     and a
     ret z
@@ -441,25 +496,25 @@ AIUseFullRestore:
     jr AIPrintItemUseAndUpdateHPBar
 
 AIUsePotion:
-    ; enemy trainer heals his monster with a potion
+; enemy trainer heals his monster with a potion
     ld a, POTION
     ld b, 20
     jr AIRecoverHP
 
 AIUseSuperPotion:
-    ; enemy trainer heals his monster with a super potion
+; enemy trainer heals his monster with a super potion
     ld a, SUPER_POTION
     ld b, 50
     jr AIRecoverHP
 
 AIUseHyperPotion:
-    ; enemy trainer heals his monster with a hyper potion
+; enemy trainer heals his monster with a hyper potion
     ld a, HYPER_POTION
     ld b, 200
     ; fallthrough
 
 AIRecoverHP:
-    ; heal b HP and print "trainer used $(a) on pokemon!"
+; heal b HP and print "trainer used $(a) on pokemon!"
     ld [wAIItem], a
     ld hl, wEnemyMonHP + 1
     ld a, [hl]
@@ -482,7 +537,7 @@ AIRecoverHP:
     ld a, [de]
     dec de
     ld [wHPBarMaxHP], a
-    sub b
+    sub a, b
     ld a, [hli]
     ld b, a
     ld a, [de]
@@ -508,7 +563,7 @@ AIPrintItemUseAndUpdateHPBar:
     jp DecrementAICount
 
 AISwitchIfEnoughMons:
-    ; enemy trainer switches if there are 2 or more unfainted mons in party
+; enemy trainer switches if there are 2 or more unfainted mons in party
     ld a, [wEnemyPartyCount]
     ld c, a
     ld hl, wEnemyMon1HP
@@ -516,14 +571,14 @@ AISwitchIfEnoughMons:
     ld d, 0 ; keep count of unfainted monsters
 
     ; count how many monsters haven't fainted yet
-.loop:
+.loop
     ld a, [hli]
     ld b, a
     ld a, [hld]
-    or a, b
+    or b
     jr z, .Fainted ; has monster fainted?
     inc d
-.Fainted:
+.Fainted
     push bc
     ld bc, wEnemyMon2 - wEnemyMon1
     add hl, bc
@@ -532,13 +587,13 @@ AISwitchIfEnoughMons:
     jr nz, .loop
 
     ld a, d ; how many available monsters are there?
-    cp 2    ; don't bother if only 1
+    cp a, 2    ; don't bother if only 1
     jp nc, SwitchEnemyMon
     and a
     ret
 
 SwitchEnemyMon:
-    ; prepare to withdraw the active monster: copy hp, number, and status to roster
+; prepare to withdraw the active monster: copy hp, number, and status to roster
     ld a, [wEnemyMonPartyPos]
     ld hl, wEnemyMon1HP
     ld bc, wEnemyMon2 - wEnemyMon1
@@ -577,7 +632,7 @@ AIUseFullHeal:
     jp AIPrintItemUse
 
 AICureStatus:
-    ; cures the status of enemy's active pokemon
+; cures the status of enemy's active pokemon
     ld a, [wEnemyMonPartyPos]
     ld hl, wEnemyMon1Status
     ld bc, wEnemyMon2 - wEnemyMon1
@@ -611,7 +666,7 @@ AIUseDireHit: ; unused
     jp AIPrintItemUse
 
 AICheckIfHPBelowFraction:
-    ; return carry if enemy trainer's current HP is below 1 / a of the maximum
+; return carry if enemy trainer's current HP is below 1 / a of the maximum
     ldh [hDivisor], a
     ld hl, wEnemyMonMaxHP
     ld a, [hli]
@@ -684,7 +739,7 @@ AIPrintItemUse:
     jp DecrementAICount
 
 AIPrintItemUse_:
-    ; print "x used [wAIItem] on z!"
+; print "x used [wAIItem] on z!"
     ld a, [wAIItem]
     ld [wd11e], a
     call GetItemName
