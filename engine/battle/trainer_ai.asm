@@ -48,18 +48,18 @@ SelectMoveBasedOnProbabilities:
     ld [cumulativeProb1], a
     inc hl
     ld a, [hl]
-    ld b, [cumulativeProb1]
-    add a, b
+    ld b, a
+    add a, [cumulativeProb1]
     ld [cumulativeProb2], a
     inc hl
     ld a, [hl]
-    ld b, [cumulativeProb2]
-    add a, b
+    ld b, a
+    add a, [cumulativeProb2]
     ld [cumulativeProb3], a
     inc hl
     ld a, [hl]
-    ld b, [cumulativeProb3]
-    add a, b
+    ld b, a
+    add a, [cumulativeProb3]
     ld [cumulativeProb4], a
 
     ; Compare random number with cumulative probabilities to select a move
@@ -189,7 +189,7 @@ Multiply:
     rl e
     rl d
     jr nc, .skip_add
-    add hl, de
+    add a, d
 .skip_add:
     dec b
     jr nz, .mul_loop
