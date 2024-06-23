@@ -1,14 +1,24 @@
-; Define constants
-NUM_MOVES          EQU 4
-MOVE_LENGTH        EQU 1 ; Assuming each move is represented by 1 byte
+; Define constants (remove if already defined in the included files)
+; NUM_MOVES EQU 4
+; MOVE_LENGTH EQU 1
 
 ; Define storage for state representation and move probabilities
-stateEnemyHP:          db 0
+stateEnemyHP:      ds 1
+stateTypeEffectiveness: ds 1
+stateMoveType:     ds 1
+stateMovePower:    ds 1
+stateMoves:        ds NUM_MOVES * MOVE_LENGTH
+stateStatus:       ds 1
+selectedMove:      ds 1
 stateMoveProbabilities: ds NUM_MOVES
-selectedMove:          db 0
-reward:                db 0
-learningRate:          db 1  ; Example learning rate (0.01 scaled to 1 for simplicity)
-cumulativeProbs:       ds NUM_MOVES
+cumulativeProb1:   ds 1
+cumulativeProb2:   ds 1
+cumulativeProb3:   ds 1
+cumulativeProb4:   ds 1
+selectedMove1:     ds 1
+selectedMove2:     ds 1
+selectedMove3:     ds 1
+selectedMove4:     ds 1
 
 ; Prepare the state representation
 PrepareState:
@@ -16,7 +26,117 @@ PrepareState:
     ld a, [wEnemyMonHP + 1]
     ld [stateEnemyHP], a
 
-    ; Initialize move probabilities (assuming 4 moves with equal probability)
+    ; Load type effectiveness, move type, and move power
+    ld a, [wTypeEffectiveness]
+    ld [stateTypeEffectiveness], a
+    ld a, [wEnemyMoveType]
+    ld [stateMoveType], a
+    ld a, [wEnemyMovePower]
+    ld [stateMovePower], a
+
+    ; Load available moves and their properties
+    ld hl, wEnemyMonMoves
+    ld de, stateMoves
+    ld bc, NUM_MOVES * MOVE_LENGTH
+    call CopyData
+
+    ; Load status conditions
+    ld a, [wBattleMonStatus]
+    ld [stateStatus], a
+
+    ret
+
+; Call PPO model to get move probabilities
+CallPPOModel:
+    call PrepareState
+    ; Call the external PPO model function
+    call PPOModelFunction
+
+    ; Assume the model writes probabilities to a fixed location
+    ld hl, stateMoveProbabilities
+    ; Now hl points to the move probabilities
+    ; Select the move based on probabilities (e.g., by sampling)
+    ret
+
+; Select a move based on the probabilities output by the PPO model
+SelectMoveBasedOnProbabilities:
+    ; This function selects a move based on the probabilities
+    ; Implementation depends on how probabilities are represented
+    ; Here, we assume a simple weighted random selection
+
+    ; Calculate cumulative probabilities
+    ld hl, stateMoveProbabilities
+    ld a, [hl]
+    ld [cumulativeProb1], a
+    inc hl
+    ld a, [hl]
+    ld b, a
+    ld a, [cumulativeProb1]
+    add a, b
+    ld [cumulativeProb2], a
+    inc hl
+    ld a, [hl]
+    ld b, a
+    ld a, [cumulativeProb2]
+    add a, b
+    ld [cumulativeProb3], a
+    inc hl
+    ld a, [hl]
+    ld b, a
+    ld a, [cumulativeProb3]
+    add a, b
+    ld [cumulativeProb4], a
+
+    ; Generate a random number
+    call Random
+    ; Assuming random number is in register A
+
+    ; Compare random number with cumulative probabilities to select a move
+    ld a, [cumulativeProb1]
+    cp a
+    jr c, .selectMove1
+    ld a, [cumulativeProb2]
+    cp a
+    jr c, .selectMove2
+    ld a, [cumulativeProb3]
+    cp a
+    jr c, .selectMove3
+    ; If not less than cumulativeProb3, select move 4
+
+.selectMove4:
+    ld hl, wEnemyMonMoves
+    ld de, MOVE_LENGTH * 3
+    add hl, de
+    ld a, [hl]
+    ld [selectedMove4], a
+    ret
+
+.selectMove1:
+    ld hl, wEnemyMonMoves
+    ld a, [hl]
+    ld [selectedMove1], a
+    ret
+
+.selectMove2:
+    ld hl, wEnemyMonMoves
+    ld de, MOVE_LENGTH
+    add hl, de
+    ld a, [hl]
+    ld [selectedMove2], a
+    ret
+
+.selectMove3:
+    ld hl, wEnemyMonMoves
+    ld de, MOVE_LENGTH * 2
+    add hl, de
+    ld a, [hl]
+    ld [selectedMove3], a
+    ret
+
+; This is a placeholder function that represents the PPO model
+; In a real implementation, this would call the PPO model and write the probabilities to moveProbabilities
+PPOModelFunction:
+    ; Placeholder: Just return uniform probabilities
     ld hl, stateMoveProbabilities
     ld a, 25
     ld [hl], a
@@ -26,78 +146,11 @@ PrepareState:
     ld [hl], a
     inc hl
     ld [hl], a
-
     ret
 
-; Call PPO model to get move probabilities
-CallPPOModel:
-    call PrepareState
-    ; Placeholder for the external PPO model function (if needed)
-    ret
-
-; Select a move based on the probabilities
-SelectMoveBasedOnProbabilities:
-    ; Generate a random number (0-255)
-    call Random
-
-    ; Calculate cumulative probabilities
-    ld hl, stateMoveProbabilities
-    ld de, cumulativeProbs
-    ld a, [hl]
-    ld [de], a
-    inc hl
-    inc de
-    ld a, [hl]
-    add [cumulativeProbs]
-    ld [de], a
-    inc hl
-    inc de
-    ld a, [hl]
-    add [de - 1]
-    ld [de], a
-    inc hl
-    inc de
-    ld a, [hl]
-    add [de - 1]
-    ld [de], a
-
-    ; Compare random number with cumulative probabilities to select a move
-    ld hl, cumulativeProbs
-    ld b, [hl]
-    cp b
-    jr c, .selectMove1
-    inc hl
-    ld b, [hl]
-    cp b
-    jr c, .selectMove2
-    inc hl
-    ld b, [hl]
-    cp b
-    jr c, .selectMove3
-    ; If not less than cumulativeProb3, select move 4
-
-.selectMove4:
-    ld a, 3
-    jr .end
-
-.selectMove1:
-    ld a, 0
-    jr .end
-
-.selectMove2:
-    ld a, 1
-    jr .end
-
-.selectMove3:
-    ld a, 2
-
-.end:
-    ld [selectedMove], a
-    ret
-
-; Placeholder for the PPO model function (not used in this simple implementation)
-PPOModelFunction:
-    ret
+; Define storage for rewards and learning rate
+reward:       db 0
+learningRate: db 1  ; Example learning rate (0.01 scaled to 1 for simplicity)
 
 ; Calculate reward based on the outcome of the battle
 CalculateReward:
@@ -123,16 +176,21 @@ UpdatePolicy:
     ld b, a
 
     ; Move hl to the correct position in the probabilities array
-    add hl, b
+    ld c, b
+.loop_hl:
+    dec c
+    jr z, .adjust_probability
+    inc hl
+    jr .loop_hl
 
+.adjust_probability:
     ; Adjust the probability for the selected move
     ld a, [reward]
     ld c, a
     ld a, [learningRate]
     call Multiply ; result in de
     ld a, d
-    ld b, [hl]
-    add a, b
+    add a, [hl]
     ld [hl], a
 
     ; Normalize probabilities
@@ -161,19 +219,19 @@ NormalizeProbabilities:
     ld hl, stateMoveProbabilities
     xor a
     ld b, 0
-    ld c, NUM_MOVES
+    ld c, 0
 
 .loop_sum:
-    add [hl]
+    add a, [hl]
     ld b, a
     inc hl
-    dec c
+    inc c
+    cp NUM_MOVES
     jr nz, .loop_sum
 
     ; Normalize each probability
     ld hl, stateMoveProbabilities
     ld e, b  ; Sum of all probabilities
-    ld c, NUM_MOVES
 
 .loop_normalize:
     ld a, [hl]
@@ -189,12 +247,12 @@ NormalizeProbabilities:
 DivideByE:
     ld b, 0
 .div_loop:
-    sub e
+    sub a, e
     jr c, .done
     inc b
     jr .div_loop
 .done:
-    add e
+    add a, e
     ld a, b
     ret
 
@@ -205,8 +263,17 @@ AIEnemyTrainerChooseMoves:
 
     ; Use the probabilities to select moves
     call SelectMoveBasedOnProbabilities
-    ld a, [selectedMove]
+    ld a, [selectedMove1]
     ld [hli], a   ; move 1
+    call SelectMoveBasedOnProbabilities
+    ld a, [selectedMove2]
+    ld [hli], a   ; move 2
+    call SelectMoveBasedOnProbabilities
+    ld a, [selectedMove3]
+    ld [hli], a   ; move 3
+    call SelectMoveBasedOnProbabilities
+    ld a, [selectedMove4]
+    ld [hl], a    ; move 4
 
     ret
 
@@ -270,6 +337,8 @@ TrainerAI:
     call UpdatePolicy
 
     ret
+
+INCLUDE "data/trainers/ai_pointers.asm"
 
 ; Trainer AI behavior functions
 JugglerAI:
