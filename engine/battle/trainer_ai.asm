@@ -36,11 +36,11 @@ CallPPOModel:
     ; Select the move based on probabilities (e.g., by sampling)
     ret
 
-; Select a move based on the probabilities output by the PPO model
+; Select a move based on the probabilities
 SelectMoveBasedOnProbabilities:
-    ; This function selects a move based on the probabilities
-    ; Implementation depends on how probabilities are represented
-    ; Here, we assume a simple weighted random selection
+    ; Generate a random number
+    call Random
+    ; Assuming random number is in register A (0-255)
 
     ; Calculate cumulative probabilities
     ld hl, stateMoveProbabilities
@@ -58,10 +58,6 @@ SelectMoveBasedOnProbabilities:
     ld a, [hl]
     add a, [cumulativeProb3]
     ld [cumulativeProb4], a
-
-    ; Generate a random number
-    call Random
-    ; Assuming random number is in register A
 
     ; Compare random number with cumulative probabilities to select a move
     ld a, [cumulativeProb1]
@@ -104,6 +100,13 @@ SelectMoveBasedOnProbabilities:
     ld a, [hl]
     ld [selectedMove], a
     ret
+
+; Define storage for cumulative probabilities and selected move
+cumulativeProb1:   db 0
+cumulativeProb2:   db 0
+cumulativeProb3:   db 0
+cumulativeProb4:   db 0
+selectedMove:      db 0
 
 ; This is a placeholder function that represents the PPO model
 ; In a real implementation, this would call the PPO model and write the probabilities to moveProbabilities
