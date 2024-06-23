@@ -203,7 +203,8 @@ NormalizeProbabilities:
     ld c, NUM_MOVES
 
 .loop_sum:
-    add a, [hl]
+    ld d, [hl]
+    add a, d
     ld b, a
     inc hl
     dec c
