@@ -1,3 +1,12 @@
+; Define storage for state representation and move probabilities
+stateEnemyHP:      db 0
+stateTypeEffectiveness: db 0
+stateMoveType:     db 0
+stateMovePower:    db 0
+stateMoves:        ds NUM_MOVES * MOVE_LENGTH
+stateStatus:       db 0
+stateMoveProbabilities: ds NUM_MOVES
+
 ; Ensure NUM_MOVES and MOVE_LENGTH are not redefined
 ; Remove these lines as they are already defined in constants/battle_constants.asm
 ; DEF NUM_MOVES EQU 4
@@ -71,14 +80,14 @@ SelectMoveBasedOnProbabilities:
 
     ; Compare random number with cumulative probabilities to select a move
     ld a, [randomNumber]
-    ld a, [cumulativeProb1]
-    cp a
+    ld b, [cumulativeProb1]
+    cp b
     jr c, .selectMove1
-    ld a, [cumulativeProb2]
-    cp a
+    ld b, [cumulativeProb2]
+    cp b
     jr c, .selectMove2
-    ld a, [cumulativeProb3]
-    cp a
+    ld b, [cumulativeProb3]
+    cp b
     jr c, .selectMove3
     ; If not less than cumulativeProb3, select move 4
 
@@ -244,18 +253,35 @@ DivideByE:
     ld a, b
     ret
 
+AIEnemyTrainerChooseMoves:
+    call CallPPOModel
+    ; Assume that the probabilities from the PPO model are stored in stateMoveProbabilities
+    ld hl, wBuffer ; init temporary move selection array
+
+    ; Use the probabilities to select moves
+    call SelectMoveBasedOnProbabilities
+    ld a, [selectedMove]
+    ld [hli], a   ; move 1
+    call SelectMoveBasedOnProbabilities
+    ld a, [selectedMove]
+    ld [hli], a   ; move 2
+    call SelectMoveBasedOnProbabilities
+    ld a, [selectedMove]
+    ld [hli], a   ; move 3
+    call SelectMoveBasedOnProbabilities
+    ld a, [selectedMove]
+    ld [hl], a    ; move 4
+
+    ret
+
+; Continue with the rest of your AI logic here
+
 INCLUDE "data/trainers/move_choices.asm"
-
 INCLUDE "data/trainers/pic_pointers_money.asm"
-
 INCLUDE "data/trainers/names.asm"
-
 INCLUDE "engine/battle/misc.asm"
-
 INCLUDE "engine/battle/read_trainer_party.asm"
-
 INCLUDE "data/trainers/special_moves.asm"
-
 INCLUDE "data/trainers/parties.asm"
 
 TrainerAI:
@@ -485,7 +511,7 @@ AIRecoverHP:
     ld hl, wEnemyMonHP + 1
     ld a, [hl]
     ld [wHPBarOldHP], a
-    add a, b
+    add b
     ld [hld], a
     ld [wHPBarNewHP], a
     ld a, [hl]
@@ -508,7 +534,7 @@ AIRecoverHP:
     ld b, a
     ld a, [de]
     ld [wHPBarMaxHP+1], a
-    sbc a, b
+    sbc b
     jr nc, AIPrintItemUseAndUpdateHPBar
     inc de
     ld a, [de]
@@ -715,3 +741,6 @@ AIPrintItemUse_:
 AIBattleUseItemText:
     text_far _AIBattleUseItemText
     text_end
+
+; Include all required files at the end to ensure symbols are defined
+INCLUDE "constants/battle_constants.asm"
