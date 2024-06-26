@@ -240,13 +240,13 @@ DivideByE:
     ret
 
 ; Define storage for state representation and move probabilities
-stateEnemyHP:      ds 1
-stateTypeEffectiveness: ds 1
-stateMoveType:     ds 1
-stateMovePower:    ds 1
-stateMoves:        ds NUM_MOVES * MOVE_LENGTH
-stateStatus:       ds 1
-stateMoveProbabilities: ds NUM_MOVES
+stateEnemyHP:               ds 1
+stateTypeEffectiveness:     ds 1
+stateMoveType:              ds 1
+stateMovePower:             ds 1
+stateMoves:                 ds NUM_MOVES * MOVE_LENGTH
+stateStatus:                ds 1
+stateMoveProbabilities:     ds NUM_MOVES
 
 AIEnemyTrainerChooseMoves:
     call CallPPOModel
