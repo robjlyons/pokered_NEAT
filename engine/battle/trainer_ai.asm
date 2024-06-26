@@ -1,7 +1,3 @@
-; engine/battle/trainer_ai.asm
-
-INCLUDE "constants/battle_constants.asm"
-
 ; Prepare the state representation
 PrepareState:
     ; Load current HP of the enemy Pokémon
