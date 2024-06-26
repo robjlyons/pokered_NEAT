@@ -1,17 +1,3 @@
-; Define storage for state representation and move probabilities
-stateEnemyHP:      db 0
-stateTypeEffectiveness: db 0
-stateMoveType:     db 0
-stateMovePower:    db 0
-stateMoves:        ds NUM_MOVES * MOVE_LENGTH
-stateStatus:       db 0
-stateMoveProbabilities: ds NUM_MOVES
-
-; Ensure NUM_MOVES and MOVE_LENGTH are not redefined
-; Remove these lines as they are already defined in constants/battle_constants.asm
-; DEF NUM_MOVES EQU 4
-; DEF MOVE_LENGTH EQU 1
-
 ; Prepare the state representation
 PrepareState:
     ; Load current HP of the enemy Pokémon
@@ -252,29 +238,6 @@ DivideByE:
     add a, e
     ld a, b
     ret
-
-AIEnemyTrainerChooseMoves:
-    call CallPPOModel
-    ; Assume that the probabilities from the PPO model are stored in stateMoveProbabilities
-    ld hl, wBuffer ; init temporary move selection array
-
-    ; Use the probabilities to select moves
-    call SelectMoveBasedOnProbabilities
-    ld a, [selectedMove]
-    ld [hli], a   ; move 1
-    call SelectMoveBasedOnProbabilities
-    ld a, [selectedMove]
-    ld [hli], a   ; move 2
-    call SelectMoveBasedOnProbabilities
-    ld a, [selectedMove]
-    ld [hli], a   ; move 3
-    call SelectMoveBasedOnProbabilities
-    ld a, [selectedMove]
-    ld [hl], a    ; move 4
-
-    ret
-
-; Continue with the rest of your AI logic here
 
 INCLUDE "data/trainers/move_choices.asm"
 INCLUDE "data/trainers/pic_pointers_money.asm"
@@ -742,5 +705,11 @@ AIBattleUseItemText:
     text_far _AIBattleUseItemText
     text_end
 
-; Include all required files at the end to ensure symbols are defined
-INCLUDE "constants/battle_constants.asm"
+; Define storage for state representation and move probabilities
+stateEnemyHP:      ds 1
+stateTypeEffectiveness: ds 1
+stateMoveType:     ds 1
+stateMovePower:    ds 1
+stateMoves:        ds NUM_MOVES * MOVE_LENGTH
+stateStatus:       ds 1
+stateMoveProbabilities: ds NUM_MOVES
