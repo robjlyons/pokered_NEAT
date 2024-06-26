@@ -47,24 +47,33 @@ SelectMoveBasedOnProbabilities:
     ld [cumulativeProb1], a
     inc hl
     ld a, [hl]
-    add [cumulativeProb1]
+    ld b, a
+    ld a, [cumulativeProb1]
+    add a, b
     ld [cumulativeProb2], a
     inc hl
     ld a, [hl]
-    add [cumulativeProb2]
+    ld b, a
+    ld a, [cumulativeProb2]
+    add a, b
     ld [cumulativeProb3], a
     inc hl
     ld a, [hl]
-    add [cumulativeProb3]
+    ld b, a
+    ld a, [cumulativeProb3]
+    add a, b
     ld [cumulativeProb4], a
 
     ; Compare random number with cumulative probabilities to select a move
     ld a, [randomNumber]
-    cp [cumulativeProb1]
+    ld b, [cumulativeProb1]
+    cp b
     jr c, .selectMove1
-    cp [cumulativeProb2]
+    ld b, [cumulativeProb2]
+    cp b
     jr c, .selectMove2
-    cp [cumulativeProb3]
+    ld b, [cumulativeProb3]
+    cp b
     jr c, .selectMove3
     ; If not less than cumulativeProb3, select move 4
 
