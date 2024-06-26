@@ -1,28 +1,9 @@
-; Define constants
-NUM_MOVES EQU 4
-MOVE_LENGTH EQU 1
+; Ensure NUM_MOVES and MOVE_LENGTH are not redefined
+; Remove these lines as they are already defined in constants/battle_constants.asm
+; DEF NUM_MOVES EQU 4
+; DEF MOVE_LENGTH EQU 1
 
-; Define storage for state representation and move probabilities
-stateEnemyHP:      db 0
-stateTypeEffectiveness: db 0
-stateMoveType:     db 0
-stateMovePower:    db 0
-stateMoves:        ds NUM_MOVES * MOVE_LENGTH
-stateStatus:       db 0
-stateMoveProbabilities: ds NUM_MOVES
-
-; Define storage for cumulative probabilities and selected move
-cumulativeProb1:   db 0
-cumulativeProb2:   db 0
-cumulativeProb3:   db 0
-cumulativeProb4:   db 0
-selectedMove:      db 0
-randomNumber:      db 0
-
-; Define storage for rewards and learning rate
-reward:       db 0
-learningRate: db 1  ; Example learning rate (0.01 scaled to 1 for simplicity)
-
+; Prepare the state representation
 PrepareState:
     ; Load current HP of the enemy Pokémon
     ld a, [wEnemyMonHP + 1]
@@ -48,6 +29,7 @@ PrepareState:
 
     ret
 
+; Call PPO model to get move probabilities
 CallPPOModel:
     call PrepareState
     ; Call the external PPO model function
@@ -58,6 +40,7 @@ CallPPOModel:
     ; Now hl points to the move probabilities
     ret
 
+; Select a move based on the probabilities
 SelectMoveBasedOnProbabilities:
     ; Generate a random number
     call Random
@@ -129,6 +112,16 @@ SelectMoveBasedOnProbabilities:
     ld [selectedMove], a
     ret
 
+; Define storage for cumulative probabilities and selected move
+cumulativeProb1:   db 0
+cumulativeProb2:   db 0
+cumulativeProb3:   db 0
+cumulativeProb4:   db 0
+selectedMove:      db 0
+randomNumber:      db 0
+
+; This is a placeholder function that represents the PPO model
+; In a real implementation, this would call the PPO model and write the probabilities to moveProbabilities
 PPOModelFunction:
     ; Placeholder: Just return uniform probabilities
     ld hl, stateMoveProbabilities
@@ -142,6 +135,11 @@ PPOModelFunction:
     ld [hl], a
     ret
 
+; Define storage for rewards and learning rate
+reward:       db 0
+learningRate: db 1  ; Example learning rate (0.01 scaled to 1 for simplicity)
+
+; Calculate reward based on the outcome of the battle
 CalculateReward:
     ; Check if the enemy Pokémon is defeated
     ld a, [wEnemyMonHP + 1]
@@ -158,6 +156,7 @@ CalculateReward:
     ld [reward], a
     ret
 
+; Update the move probabilities based on the reward
 UpdatePolicy:
     ld hl, stateMoveProbabilities
     ld a, [selectedMove]
@@ -201,6 +200,48 @@ Multiply:
 .skip_add:
     dec b
     jr nz, .mul_loop
+    ret
+
+; Normalize probabilities to ensure they sum to 100
+NormalizeProbabilities:
+    ld hl, stateMoveProbabilities
+    xor a
+    ld b, 0
+    ld c, NUM_MOVES
+
+.loop_sum:
+    add a, [hl]
+    ld b, a
+    inc hl
+    dec c
+    jr nz, .loop_sum
+
+    ; Normalize each probability
+    ld hl, stateMoveProbabilities
+    ld e, b  ; Sum of all probabilities
+    ld c, NUM_MOVES
+
+.loop_normalize:
+    ld a, [hl]
+    call DivideByE
+    ld [hl], a
+    inc hl
+    dec c
+    jr nz, .loop_normalize
+
+    ret
+
+; Divide value in a by value in e, store result in a
+DivideByE:
+    ld b, 0
+.div_loop:
+    sub e
+    jr c, .done
+    inc b
+    jr .div_loop
+.done:
+    add a, e
+    ld a, b
     ret
 
 INCLUDE "data/trainers/move_choices.asm"
