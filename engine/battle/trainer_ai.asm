@@ -277,7 +277,7 @@ TrainerAI:
     ld h, [hl]
     ld l, a
     call Random
-    call AIEnemyTrainerChooseMoves
+    call SelectMoveBasedOnProbabilities
 
     ; Calculate reward and update policy after the move is executed
     call CalculateReward
