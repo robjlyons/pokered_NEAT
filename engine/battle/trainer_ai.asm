@@ -248,16 +248,12 @@ AIEnemyTrainerChooseMoves:
     ld hl, wBuffer ; init temporary move selection array
 
     ; Use the probabilities to select moves
-    call SelectMoveBasedOnProbabilities
     ld a, [selectedMove]
     ld [hli], a   ; move 1
-    call SelectMoveBasedOnProbabilities
     ld a, [selectedMove]
     ld [hli], a   ; move 2
-    call SelectMoveBasedOnProbabilities
     ld a, [selectedMove]
     ld [hli], a   ; move 3
-    call SelectMoveBasedOnProbabilities
     ld a, [selectedMove]
     ld [hl], a    ; move 4
 
