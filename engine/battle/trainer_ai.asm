@@ -1,7 +1,3 @@
-; Define constants for better readability
-NUM_MOVES          equ 4
-MOVE_LENGTH        equ 2
-
 ; Prepare the state representation
 PrepareState:
     ; Load current HP of the enemy Pokémon
@@ -40,33 +36,28 @@ CallPPOModel:
     ret
 
 ; Calculate cumulative probabilities
-CalculateCumulativeProbabilities:
     ld hl, stateMoveProbabilities
     ld a, [hl]
     ld [cumulativeProb1], a
     inc hl
     ld a, [hl]
-    add a, [cumulativeProb1]
+    ld b, [cumulativeProb1]
+    add a, b
     ld [cumulativeProb2], a
     inc hl
     ld a, [hl]
-    add a, [cumulativeProb2]
+    ld b, [cumulativeProb2]
+    add a, b
     ld [cumulativeProb3], a
     inc hl
     ld a, [hl]
-    add a, [cumulativeProb3]
+    ld b, [cumulativeProb3]
+    add a, b
     ld [cumulativeProb4], a
-    ret
 
-; Compare random number with cumulative probabilities to select a move
-SelectMoveBasedOnProbabilities:
-    call Random
-    ld [randomNumber], a
-    call CalculateCumulativeProbabilities
-
+    ; Compare random number with cumulative probabilities to select a move
     ld a, [randomNumber]
     ld b, a
-
     ld a, [cumulativeProb1]
     cp b
     jr c, .selectMove1
@@ -116,9 +107,10 @@ cumulativeProb4:   db 0
 selectedMove:      db 0
 randomNumber:      db 0
 
-; Placeholder function that represents the PPO model
+; This is a placeholder function that represents the PPO model
+; In a real implementation, this would call the PPO model and write the probabilities to moveProbabilities
 PPOModelFunction:
-    ; Return uniform probabilities as a placeholder
+    ; Placeholder: Just return uniform probabilities
     ld hl, stateMoveProbabilities
     ld a, 25
     ld [hl], a
