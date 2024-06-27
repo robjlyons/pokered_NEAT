@@ -59,13 +59,13 @@ CallPPOModel:
     ld a, [randomNumber]
     ld b, a
     ld a, [cumulativeProb1]
-    cp b
+    cp a, b
     jr c, .selectMove1
     ld a, [cumulativeProb2]
-    cp b
+    cp a, b
     jr c, .selectMove2
     ld a, [cumulativeProb3]
-    cp b
+    cp a, b
     jr c, .selectMove3
     ; If not less than cumulativeProb3, select move 4
 
