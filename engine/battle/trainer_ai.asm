@@ -35,13 +35,7 @@ CallPPOModel:
     ; Now hl points to the move probabilities
     ret
 
-; Select a move based on the probabilities
-SelectMoveBasedOnProbabilities:
-    ; Generate a random number
-    call Random
-    ld [randomNumber], a
-
-    ; Calculate cumulative probabilities
+; Calculate cumulative probabilities
     ld hl, stateMoveProbabilities
     ld a, [hl]
     ld [cumulativeProb1], a
@@ -63,13 +57,14 @@ SelectMoveBasedOnProbabilities:
 
     ; Compare random number with cumulative probabilities to select a move
     ld a, [randomNumber]
-    ld b, [cumulativeProb1]
+    ld b, a
+    ld a, [cumulativeProb1]
     cp b
     jr c, .selectMove1
-    ld b, [cumulativeProb2]
+    ld a, [cumulativeProb2]
     cp b
     jr c, .selectMove2
-    ld b, [cumulativeProb3]
+    ld a, [cumulativeProb3]
     cp b
     jr c, .selectMove3
     ; If not less than cumulativeProb3, select move 4
