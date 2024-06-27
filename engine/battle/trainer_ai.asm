@@ -1,3 +1,7 @@
+; Define constants for better readability
+NUM_MOVES          equ 4
+MOVE_LENGTH        equ 2
+
 ; Prepare the state representation
 PrepareState:
     ; Load current HP of the enemy Pokémon
@@ -36,31 +40,33 @@ CallPPOModel:
     ret
 
 ; Calculate cumulative probabilities
+CalculateCumulativeProbabilities:
     ld hl, stateMoveProbabilities
     ld a, [hl]
     ld [cumulativeProb1], a
     inc hl
     ld a, [hl]
-    ld b, a
-    ld a, [cumulativeProb1]
-    add a, b
+    add a, [cumulativeProb1]
     ld [cumulativeProb2], a
     inc hl
     ld a, [hl]
-    ld b, a
-    ld a, [cumulativeProb2]
-    add a, b
+    add a, [cumulativeProb2]
     ld [cumulativeProb3], a
     inc hl
     ld a, [hl]
-    ld b, a
-    ld a, [cumulativeProb3]
-    add a, b
+    add a, [cumulativeProb3]
     ld [cumulativeProb4], a
+    ret
 
-    ; Compare random number with cumulative probabilities to select a move
+; Compare random number with cumulative probabilities to select a move
+SelectMoveBasedOnProbabilities:
+    call Random
+    ld [randomNumber], a
+    call CalculateCumulativeProbabilities
+
     ld a, [randomNumber]
     ld b, a
+
     ld a, [cumulativeProb1]
     cp b
     jr c, .selectMove1
@@ -110,10 +116,9 @@ cumulativeProb4:   db 0
 selectedMove:      db 0
 randomNumber:      db 0
 
-; This is a placeholder function that represents the PPO model
-; In a real implementation, this would call the PPO model and write the probabilities to moveProbabilities
+; Placeholder function that represents the PPO model
 PPOModelFunction:
-    ; Placeholder: Just return uniform probabilities
+    ; Return uniform probabilities as a placeholder
     ld hl, stateMoveProbabilities
     ld a, 25
     ld [hl], a
@@ -248,12 +253,16 @@ AIEnemyTrainerChooseMoves:
     ld hl, wBuffer ; init temporary move selection array
 
     ; Use the probabilities to select moves
+    call SelectMoveBasedOnProbabilities
     ld a, [selectedMove]
     ld [hli], a   ; move 1
+    call SelectMoveBasedOnProbabilities
     ld a, [selectedMove]
     ld [hli], a   ; move 2
+    call SelectMoveBasedOnProbabilities
     ld a, [selectedMove]
     ld [hli], a   ; move 3
+    call SelectMoveBasedOnProbabilities
     ld a, [selectedMove]
     ld [hl], a    ; move 4
 
