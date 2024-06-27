@@ -201,45 +201,46 @@ Multiply:
 
 ; Normalize probabilities to ensure they sum to 100
 NormalizeProbabilities:
-    ld hl, stateMoveProbabilities
-    xor a
-    ld b, 0
-    ld c, NUM_MOVES
+    ld hl, stateMoveProbabilities ; Point HL to the start of the probabilities array
+    xor a                         ; Clear the accumulator (A) to use it for summing
+    ld b, 0                       ; Clear register B which will hold the sum
+    ld c, NUM_MOVES               ; Load the number of moves into C
 
 .loop_sum:
-    add a, [hl]
-    ld b, a
-    inc hl
-    dec c
-    jr nz, .loop_sum
+    add a, [hl]                   ; Add the value at HL to A
+    ld b, a                       ; Store the sum in B
+    inc hl                        ; Increment HL to point to the next value
+    dec c                         ; Decrement C (loop counter)
+    jr nz, .loop_sum              ; Repeat until C is zero
 
     ; Normalize each probability
-    ld hl, stateMoveProbabilities
-    ld e, b  ; Sum of all probabilities
-    ld c, NUM_MOVES
+    ld hl, stateMoveProbabilities ; Point HL back to the start of the probabilities array
+    ld e, b                       ; Load the sum of all probabilities into E
+    ld c, NUM_MOVES               ; Reload the number of moves into C
 
 .loop_normalize:
-    ld a, [hl]
-    call DivideByE
-    ld [hl], a
-    inc hl
-    dec c
-    jr nz, .loop_normalize
+    ld a, [hl]                    ; Load the current probability into A
+    call DivideByE                ; Divide A by E (sum of probabilities) and store result back in A
+    ld [hl], a                    ; Store the normalized value back into the array
+    inc hl                        ; Move to the next probability
+    dec c                         ; Decrement C (loop counter)
+    jr nz, .loop_normalize        ; Repeat until C is zero
 
-    ret
+    ret                           ; Return from the subroutine
 
-; Divide value in a by value in e, store result in a
+; Divide value in A by value in E, store result in A
 DivideByE:
-    ld b, 0
+    ld b, 0                      ; Clear register B which will count the quotient
 .div_loop:
-    sub e
-    jr c, .done
-    inc b
-    jr .div_loop
+    sub e                        ; Subtract E from A
+    jr c, .done                  ; If the result is negative, we are done
+    inc b                        ; Otherwise, increment B (quotient)
+    jr .div_loop                 ; Repeat the loop
+
 .done:
-    add a, e
-    ld a, b
-    ret
+    add a, e                     ; Correct A by adding back E (because the last subtraction was not valid)
+    ld a, b                      ; Load the quotient back into A
+    ret                          ; Return from the subroutine
 
 ; Define storage for state representation and move probabilities
 stateEnemyHP:               ds 1
