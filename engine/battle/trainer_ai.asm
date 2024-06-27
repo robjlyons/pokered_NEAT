@@ -41,17 +41,20 @@ CallPPOModel:
     ld [cumulativeProb1], a
     inc hl
     ld a, [hl]
-    ld b, [cumulativeProb1]
+    ld b, a
+    ld a, [cumulativeProb1]
     add a, b
     ld [cumulativeProb2], a
     inc hl
     ld a, [hl]
-    ld b, [cumulativeProb2]
+    ld b, a
+    ld a, [cumulativeProb2]
     add a, b
     ld [cumulativeProb3], a
     inc hl
     ld a, [hl]
-    ld b, [cumulativeProb3]
+    ld b, a
+    ld a, [cumulativeProb3]
     add a, b
     ld [cumulativeProb4], a
 
