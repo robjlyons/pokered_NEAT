@@ -59,13 +59,13 @@ CallPPOModel:
     ld a, [randomNumber]
     ld b, a
     ld a, [cumulativeProb1]
-    cp a, b
+    cp b
     jr c, .selectMove1
     ld a, [cumulativeProb2]
-    cp a, b
+    cp b
     jr c, .selectMove2
     ld a, [cumulativeProb3]
-    cp a, b
+    cp b
     jr c, .selectMove3
     ; If not less than cumulativeProb3, select move 4
 
@@ -261,17 +261,11 @@ AIEnemyTrainerChooseMoves:
     ret
 
 INCLUDE "data/trainers/move_choices.asm"
-
 INCLUDE "data/trainers/pic_pointers_money.asm"
-
 INCLUDE "data/trainers/names.asm"
-
 INCLUDE "engine/battle/misc.asm"
-
 INCLUDE "engine/battle/read_trainer_party.asm"
-
 INCLUDE "data/trainers/special_moves.asm"
-
 INCLUDE "data/trainers/parties.asm"
 
 TrainerAI:
